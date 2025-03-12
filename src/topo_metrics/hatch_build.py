@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 
@@ -13,6 +14,9 @@ class CustomBuildHook(BuildHookInterface):
 
         # get the active Python environment.
         python_executable = sys.executable
+        julia_package_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "RingStatistics")
+        )
 
         print("🔧 Running Julia setup for topo-metrics...")
 
@@ -22,7 +26,7 @@ class CustomBuildHook(BuildHookInterface):
         # step 2: Set the correct Python path in Julia’s PyCall.jl
         subprocess.run(
             [
-                "julia", "--project=src/RingStatistics",
+                "julia", "--project=" + julia_package_path,
                 "-e", (
                     f'using Pkg; ENV["PYTHON"]="{python_executable}";'
                     'Pkg.build("PyCall")'
@@ -33,9 +37,10 @@ class CustomBuildHook(BuildHookInterface):
         # step 3: Instantiate Julia project and precompile.
         subprocess.run(
             [
-                "julia", "--project=src/RingStatistics",
-                "-e", "using Pkg; Pkg.instantiate(); Pkg.precompile()"
-            ], check=True
+                "julia", "--project=" + julia_package_path, "-e", 
+                "import Pkg; Pkg.instantiate(); Pkg.precompile()"
+            ], 
+            check=True
         )
 
         # step 4: Ensure PyJulia is initialized properly.
