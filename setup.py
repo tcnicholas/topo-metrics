@@ -10,7 +10,6 @@ class PostInstallCommand(install):
     """ Post-installation for setting up Julia dependencies. """
     
     def run(self):
-
         install.run(self)  # Run standard install process
         print("🔧 Running Julia setup after installation...")
 
@@ -27,15 +26,15 @@ class PostInstallCommand(install):
             subprocess.run(["juliaup", "update"], check=True)
 
             # Step 2: Set the correct Python path in Julia’s PyCall.jl
-            #subprocess.run(
-            #    [
-            #        "julia", "--project=" + julia_package_path,
-            #        "-e", (
-            #            f'using Pkg; ENV["PYTHON"]="{python_executable}";'
-            #            'Pkg.build("PyCall")'
-            #        )
-            #    ], check=True
-            #)
+            subprocess.run(
+                [
+                    "julia", "--project=" + julia_package_path,
+                    "-e", (
+                        f'using Pkg; ENV["PYTHON"]="{python_executable}";'
+                        'Pkg.build("PyCall")'
+                    )
+                ], check=True
+            )
 
             # Step 3: Instantiate Julia project and precompile.
             subprocess.run(

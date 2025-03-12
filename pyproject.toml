@@ -18,6 +18,14 @@ dependencies = [
 ]
 requires-python = ">=3.10"
 
+[tool.setuptools]
+packages = ["topo_metrics", "topo_metrics.RingStatistics"]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.package-data]
+topo_metrics = ["RingStatistics/**/*"]
+
 [project.urls]
 Homepage = "https://github.com/tcnicholas/topo-metrics"
 
