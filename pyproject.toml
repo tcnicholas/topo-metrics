@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling", "julia>=0.6.2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "topo-metrics"
+version = "0.0.1"
+description = "Topological analysis tools for network materials."
+readme = "README.md"
+authors = [{ name = "Thomas Nicholas", email = "tcnicholas@me.com" }]
+license = { file = "LICENSE" }
+dependencies = [
+    "hatch>=1.14.0",
+    "julia>=0.6.2",
+    "pymatgen>=2025.3.10",
+    "pytest>=8.3.5",
+    "setuptools>=76.0.0",
+]
+requires-python = ">=3.10"
+
+[tool.hatch.build.hooks.custom]
+path = "src/topo_metrics/hatch_build.py"
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+publish = ["build", "twine"]
+
+[tool.bumpver]
+current_version = "0.0.1"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "bump {old_version} -> {new_version}"
+commit = true
+tag = true
+push = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"src/topo_metrics/__init__.py" = ["{version}"]
+
+[tool.ruff]
+line-length = 80
+indent-width = 4
+target-version = "py38"
+extend-include = ["*.ipynb", "*.pyi", "*.toml"]
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "B", "SIM", "I"]
+ignore = ["SIM300", "E402", "E703", "F722", "UP037", "F821", "B018", "E741"]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[dependency-groups]
+dev = [
+    "notebook>=7.3.2",
+    "ruff>=0.9.7",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
