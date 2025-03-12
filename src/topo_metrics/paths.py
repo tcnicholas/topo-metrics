@@ -3,7 +3,7 @@ from __future__ import annotations
 import contextlib
 from pathlib import Path
 
-from .utils import hushed
+from topo_metrics.utils import hushed
 
 RingStatistics = None
 
@@ -37,7 +37,7 @@ def instantiate_julia() -> None:
             from julia import Pkg
 
             # first activate the environment and instantiate the packages.
-            Pkg.activate( str(get_project_src() / "RingStatistics") )
+            Pkg.activate( str(get_project_root() / "RingStatistics") )
 
             # now attempt to import the RingStatistics module.
             from julia import RingStatistics as RS
