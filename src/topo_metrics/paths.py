@@ -3,8 +3,6 @@ from __future__ import annotations
 import contextlib
 from pathlib import Path
 
-from topo_metrics.utils import hushed
-
 RingStatistics = None
 
 
@@ -31,27 +29,18 @@ def instantiate_julia() -> None:
     Initialises Julia, activates the environment, and imports RingStatistics.  
     """
 
+    from julia import Pkg
+
     global RingStatistics
 
-    try:
-        with hushed():
+    # first activate the environment and instantiate the packages.
+    Pkg.activate( str(get_project_root() / "RingStatistics") )
 
-            from julia import Pkg
+    # now attempt to import the RingStatistics module.
+    from julia import RingStatistics as RS
 
-            # first activate the environment and instantiate the packages.
-            Pkg.activate( str(get_project_root() / "RingStatistics") )
-
-            # now attempt to import the RingStatistics module.
-            from julia import RingStatistics as RS
-
-            # assign the RingStatistics module to the global variable.
-            RingStatistics = RS
-
-    except ImportError:
-        raise ImportError(
-            "The julia package is required to run this function. "
-            "Please install it using pip."
-        ) from None
+    # assign the RingStatistics module to the global variable.
+    RingStatistics = RS
     
 
 with contextlib.suppress(ImportError):
