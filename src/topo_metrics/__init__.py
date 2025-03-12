@@ -7,7 +7,7 @@ import sys
 from topo_metrics.topology import Topology
 
 __all__ = ["Topology"]
-__version__ = "0.0.11"
+__version__ = "0.0.12"
 
 
 def _setup_julia():
