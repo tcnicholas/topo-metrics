@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling", "julia>=0.6.2"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=65.0.0", "wheel", "julia>=0.6.2"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "topo-metrics"
@@ -10,7 +10,8 @@ readme = "README.md"
 authors = [{ name = "Thomas Nicholas", email = "tcnicholas@me.com" }]
 license = { file = "LICENSE" }
 dependencies = [
-    "hatch>=1.14.0",
+    "setuptools",
+    "wheel",
     "julia>=0.6.2",
     "pymatgen>=2025.3.10",
     "pytest>=8.3.5",
@@ -19,18 +20,6 @@ requires-python = ">=3.10"
 
 [project.urls]
 Homepage = "https://github.com/tcnicholas/topo-metrics"
-
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.build]
-packages = ["src/topo_metrics"]
-
-[tool.hatch.build.targets.sdist]
-include = ["src/topo_metrics"]
-
-[tool.hatch.build.hooks.custom]
-path = "src/topo_metrics/hatch_build.py"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
