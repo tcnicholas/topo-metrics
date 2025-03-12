@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
@@ -39,7 +41,7 @@ def _setup_julia():
             ], check=True
         )
 
-        # Instantiate and precompile the Julia project
+        # instantiate and precompile the Julia project
         subprocess.run(
             [
                 "julia", "--project=" + julia_package_path,
@@ -55,6 +57,7 @@ def _setup_julia():
 
     except subprocess.CalledProcessError as e:
         print(f"⚠️ Julia setup failed: {e}")
+
 
 # Run the setup only if needed
 _setup_julia()

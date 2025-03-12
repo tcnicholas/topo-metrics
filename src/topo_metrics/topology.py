@@ -53,7 +53,14 @@ class RingsResults(NamedTuple):
             vs_name = "VertexSymbols"
             vertex_symbols_str += "{\n\t"
 
-        vertex_symbols_str += ",\n\t".join([f"{x}" for x in vertex_symbols])
+        if len(vertex_symbols) > 10:
+            displayed_symbols = (
+                list(vertex_symbols)[:5] + ["..."] + list(vertex_symbols)[-5:]
+            )
+        else:
+            displayed_symbols = vertex_symbols
+
+        vertex_symbols_str += ",\n\t".join(displayed_symbols)
 
         if len(vertex_symbols) > 1:
             vertex_symbols_str += "\n}"

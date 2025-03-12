@@ -16,7 +16,8 @@ uv pip install topo-metrics --upgrade
 
 The Julia interface can sometimes take a bit of work to get up and running
 (there is probably a way to improve the build...). If this doesn't work out of
-the box, there are a couple of strategies I have found to help.
+the box (see topo_metrics.__init__.py for the strategy taken be default), you
+could try a combination of the following steps.
 
 ### 1. update PyCall.
 
