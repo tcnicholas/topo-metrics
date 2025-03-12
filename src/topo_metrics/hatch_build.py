@@ -12,7 +12,7 @@ class CustomBuildHook(BuildHookInterface):
     def initialize(self, version, build_data):
         """ Runs Julia setup before the package is installed. """
 
-        # get the active Python environment.
+        # Get the active Python environment
         python_executable = sys.executable
         julia_package_path = os.path.abspath(
             os.path.join(os.path.dirname(__file__), "RingStatistics")
@@ -20,10 +20,10 @@ class CustomBuildHook(BuildHookInterface):
 
         print("🔧 Running Julia setup for topo-metrics...")
 
-        # step 1: Ensure Julia is updated.
+        # Step 1: Ensure Julia is updated.
         subprocess.run(["juliaup", "update"], check=True)
 
-        # step 2: Set the correct Python path in Julia’s PyCall.jl
+        # Step 2: Set the correct Python path in Julia’s PyCall.jl
         subprocess.run(
             [
                 "julia", "--project=" + julia_package_path,
@@ -34,7 +34,7 @@ class CustomBuildHook(BuildHookInterface):
             ], check=True
         )
 
-        # step 3: Instantiate Julia project and precompile.
+        # Step 3: Instantiate Julia project and precompile.
         subprocess.run(
             [
                 "julia", "--project=" + julia_package_path, "-e", 
@@ -43,11 +43,24 @@ class CustomBuildHook(BuildHookInterface):
             check=True
         )
 
-        # step 4: Ensure PyJulia is initialized properly.
-        import julia
-        julia.install()
+        # Step 4: Ensure PyJulia is initialised properly.
+        self.run_python_script_in_venv()
 
         print("✅ Julia setup completed successfully!")
+
+    def run_python_script_in_venv(self):
+        """ 
+        Runs a small Python script inside the installed environment to run 
+        julia.install() 
+        """
+        python_executable = sys.executable
+        script = """if True:
+            import julia
+            julia.install()
+            print("✅ PyJulia installed successfully in the environment!")
+        """
+        
+        subprocess.run([python_executable, "-c", script], check=True)
 
 
 @hookimpl

@@ -16,11 +16,13 @@ def get_project_root() -> Path:
 
 def get_project_src() -> Path:
     """ Returns the path to the src directory located at the project root. """
+
     return get_project_root() / "src"
 
 
 def get_data_dir() -> Path:
     """ Returns the path to the data directory located at the project root. """
+
     return get_project_root() / "data"
 
 

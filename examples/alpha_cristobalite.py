@@ -2,14 +2,13 @@ from pathlib import Path
 
 from topo_metrics import Topology
 
+from .fmt import footer, header
+
 
 def main():
     """ Quick analysis of the alpha-cristobalite (dia) structure. """
 
-    # print header.
-    print("\n" + "-" * 37)
-    print("Alpha-cristobalite structure analysis")
-    print("-" * 37, end="\n\n")
+    header("Alpha-cristobalite structure analysis")
 
     # load the alpha-cristobalite structure from a .cgd file.
     structure_file = Path(__file__).parent / "data/alpha-cristobalite.cgd"
@@ -35,10 +34,7 @@ def main():
     for size, count in rings.ring_size_count:
         print(f"{size:>4}  | {count:>3} ")
 
-    # print footer.
-    print("\n" + "-" * 15)
-    print("End of analysis")
-    print("-" * 15, end="\n\n")
+    footer()
 
 if __name__ == "__main__":
     main()
