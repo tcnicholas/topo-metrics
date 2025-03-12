@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "topo-metrics"
-version = "0.0.2"
+version = "0.0.4"
 description = "Topological analysis tools for network materials."
 readme = "README.md"
 authors = [{ name = "Thomas Nicholas", email = "tcnicholas@me.com" }]
@@ -20,6 +20,15 @@ requires-python = ">=3.10"
 [project.urls]
 Homepage = "https://github.com/tcnicholas/topo-metrics"
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build]
+packages = ["src/topo_metrics"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/topo_metrics"]
+
 [tool.hatch.build.hooks.custom]
 path = "src/topo_metrics/hatch_build.py"
 
@@ -28,7 +37,7 @@ test = ["pytest", "pytest-cov"]
 publish = ["build", "twine"]
 
 [tool.bumpver]
-current_version = "0.0.2"
+current_version = "0.0.4"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump {old_version} -> {new_version}"
 commit = true
