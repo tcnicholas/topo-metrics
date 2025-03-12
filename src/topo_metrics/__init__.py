@@ -1,4 +1,4 @@
 from topo_metrics.topology import Topology
 
 __all__ = ["Topology"]
-__version__ = "0.0.6"
+__version__ = "0.0.7"
