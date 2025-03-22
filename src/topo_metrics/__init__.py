@@ -8,7 +8,7 @@ from topo_metrics.rings import Rings
 from topo_metrics.topology import Topology
 
 __all__ = ["Topology", "Rings", "Clusters"]
-__version__ = "0.0.13"
+__version__ = "0.0.14"
 
 
 def _setup_julia():

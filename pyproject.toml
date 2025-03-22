@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "topo-metrics"
-version = "0.0.13"
+version = "0.0.14"
 description = "Topological analysis tools for network materials."
 readme = "README.md"
 authors = [{ name = "Thomas Nicholas", email = "tcnicholas@me.com" }]
@@ -42,7 +42,7 @@ dev = ["bumpver", "ruff"]
 publish = ["build", "twine"]
 
 [tool.bumpver]
-current_version = "0.0.13"
+current_version = "0.0.14"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump {old_version} -> {new_version}"
 commit = true
