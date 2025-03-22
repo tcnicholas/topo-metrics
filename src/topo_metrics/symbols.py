@@ -9,12 +9,11 @@ from topo_metrics.utils import uniform_repr
 
 
 class VertexSymbol(NamedTuple):
-
     vector: list[list[int]]
     vector_all_rings: list[list[int]]
 
     def __repr__(self) -> str:
-        info = {} 
+        info = {}
         info["VS"] = self.to_str()
         info["VS(all_rings)"] = self.to_str(all_rings=True)
         return uniform_repr("VertexSymbol", **info, indent_size=4)
@@ -23,8 +22,8 @@ class VertexSymbol(NamedTuple):
         """
         Returns the string representation of the VertexSymbol.
 
-        If `all_rings` is True, ring counts are grouped and formatted with 
-        multiplicity. Otherwise, only the smallest ring sizes are shown, with 
+        If `all_rings` is True, ring counts are grouped and formatted with
+        multiplicity. Otherwise, only the smallest ring sizes are shown, with
         multiplicity for repeated values.
 
         Parameters
@@ -33,7 +32,7 @@ class VertexSymbol(NamedTuple):
             If True, ring counts are grouped and formatted with multiplicity.
             Otherwise, only the smallest ring sizes are shown, with multiplicity
             for repeated values.
-        
+
         Returns
         -------
         A string representation of the VertexSymbol.
@@ -43,7 +42,6 @@ class VertexSymbol(NamedTuple):
 
         formatted_elements = []
         for rings in vector:
-
             ring_counts = {size: rings.count(size) for size in set(rings)}
 
             # Format elements with multiplicity if needed
@@ -79,7 +77,6 @@ class CARVS(NamedTuple):
     spread: float
     is_single_node: bool
 
-
     @classmethod
     def from_list(cls, carvs_list: Sequence[CARVS]) -> CARVS:
         """
@@ -93,21 +90,21 @@ class CARVS(NamedTuple):
 
         Returns
         -------
-        A new CARVS object whose vector is the average of all input vectors, 
-        whose spread is the average of all input spreads, and whose 
-        'is_single_node' is True only if it is True for every entry in 
+        A new CARVS object whose vector is the average of all input vectors,
+        whose spread is the average of all input spreads, and whose
+        'is_single_node' is True only if it is True for every entry in
         `carvs_list`.
 
         Raises
         ------
         ValueError
-            If `carvs_list` is empty or if the vectors in `carvs_list` do not 
+            If `carvs_list` is empty or if the vectors in `carvs_list` do not
             all have the same length.
         """
 
         if not carvs_list:
             raise ValueError("Cannot create a CARVS from an empty list.")
-        
+
         # 1. pad the vectors to the same length.
         padded_carvs = pad_carvs(carvs_list)
 
@@ -129,7 +126,7 @@ class CARVS(NamedTuple):
 
     def __str__(self) -> str:
         """Generate a formatted string representation of the object."""
-        
+
         lbracket, rbracket = "{", "}"
         elements = []
 
@@ -140,23 +137,24 @@ class CARVS(NamedTuple):
                 elements.append(f"{size}.")
             else:
                 formatted_count = (
-                    f"{int(round(count))}" if abs(count - round(count)) < 1e-5 
+                    f"{int(round(count))}"
+                    if abs(count - round(count)) < 1e-5
                     else f"{count:.1f}"
                 )
                 elements.append(f"{size}({formatted_count}).")
 
-        symbol = lbracket + "".join(elements).rstrip('.') + rbracket
+        symbol = lbracket + "".join(elements).rstrip(".") + rbracket
 
         if not np.isclose(self.spread, 0.0):
             symbol += f" σ={self.spread:.1f}"
 
         return symbol
-    
+
     def __repr__(self) -> str:
         """Generate a string representation of the object."""
-    
+
         return f"CARVS( {str(self)} )"
-    
+
 
 ############################### HELPERS ###############################
 
@@ -164,7 +162,7 @@ class CARVS(NamedTuple):
 def pad_carvs(carvs_list: Sequence[CARVS]) -> Sequence[CARVS]:
     """
     Pad the vectors of a list of CARVS objects to the same length.
-    
+
     Parameters
     ----------
     carvs_list
@@ -180,33 +178,33 @@ def pad_carvs(carvs_list: Sequence[CARVS]) -> Sequence[CARVS]:
     padded_vectors = []
     for carvs in carvs_list:
         padded = np.zeros(max_length, dtype=float)
-        padded[:len(carvs.vector)] = carvs.vector
+        padded[: len(carvs.vector)] = carvs.vector
         padded_vectors.append(padded)
 
     new_carvs = []
     for orig_carvs, padded_vector in zip(carvs_list, padded_vectors):
         new_carvs.append(
             CARVS(
-                vector=padded_vector, 
+                vector=padded_vector,
                 spread=orig_carvs.spread,
                 is_single_node=orig_carvs.is_single_node,
             )
         )
-    
+
     return new_carvs
 
 
 def pad_carvs_per_atom(
-    all_carvs: list[npt.NDArray[np.int_]]
+    all_carvs: list[npt.NDArray[np.int_]],
 ) -> list[npt.NDArray[np.int_]]:
-    """ 
+    """
     Pad the CARVs per atom to the same length.
-    
+
     Parameters
     ----------
     all_carvs
         List of CARVs per atom.
-        
+
     Returns
     -------
     List of padded CARVs per atom.
@@ -236,13 +234,13 @@ def get_all_topological_distances(carvs: list[CARVS]) -> np.ndarray:
 
     Returns
     -------
-    A square matrix of shape (n_points, n_points) containing the Euclidean 
+    A square matrix of shape (n_points, n_points) containing the Euclidean
     distances between all pairs of points.
     """
 
     if not isinstance(carvs, list):
         raise TypeError("'carvs' must be a list of CARVS objects")
-    
+
     if not all(isinstance(carv, CARVS) for carv in carvs):
         raise TypeError("All elements of 'carvs' must be CARVS objects")
 
@@ -258,10 +256,10 @@ def get_all_topological_distances(carvs: list[CARVS]) -> np.ndarray:
     #
     distances = np.sqrt(
         np.maximum(
-            np.einsum('ij,ij->i', carvs_vectors, carvs_vectors)[:, None]
-            + np.einsum('ij,ij->i', carvs_vectors, carvs_vectors)[None, :]
-            - 2 * np.einsum('ik,jk->ij', carvs_vectors, carvs_vectors),
-            0
+            np.einsum("ij,ij->i", carvs_vectors, carvs_vectors)[:, None]
+            + np.einsum("ij,ij->i", carvs_vectors, carvs_vectors)[None, :]
+            - 2 * np.einsum("ik,jk->ij", carvs_vectors, carvs_vectors),
+            0,
         )
     )
 

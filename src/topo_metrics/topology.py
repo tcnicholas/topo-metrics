@@ -8,20 +8,23 @@ import numpy as np
 import numpy.typing as npt
 from pymatgen.core.lattice import Lattice as PymatgenLattice
 
+from topo_metrics._julia_wrappers import (
+    get_topological_genome,
+    run_rings,
+    run_strong_rings,
+)
 from topo_metrics.clusters import (
     Cluster,
-    RingSizeCounts,
     get_carvs_vector,
     get_clusters,
     get_vertex_symbol,
 )
 from topo_metrics.io.cgd import parse_cgd, process_neighbour_list
-from topo_metrics.paths import RingStatistics as RS
+from topo_metrics.rings import RingSizeCounts
 from topo_metrics.utils import uniform_repr
 
 
 class RingsResults(NamedTuple):
-
     depth: int
     """ The depth to which the rings were searcher for. """
 
@@ -41,14 +44,13 @@ class RingsResults(NamedTuple):
     participates. This can be summarised using common metrics such as Vertex 
     Symbols.
     """
-    
-    def __repr__(self) -> str:
 
+    def __repr__(self) -> str:
         vs_name = "VertexSymbol"
         vertex_symbols_str = ""
 
         vertex_symbols = {x.to_str() for x in get_vertex_symbol(self.clusters)}
-    
+
         if len(vertex_symbols) > 1:
             vs_name = "VertexSymbols"
             vertex_symbols_str += "{\n\t"
@@ -64,7 +66,7 @@ class RingsResults(NamedTuple):
 
         if len(vertex_symbols) > 1:
             vertex_symbols_str += "\n}"
-    
+
         info = {
             "depth": self.depth,
             "strong_rings": self.rings_are_strong,
@@ -76,6 +78,7 @@ class RingsResults(NamedTuple):
         return uniform_repr(
             "RingsResults", **info, indent_size=4, stringify=False
         )
+
 
 @dataclass
 class Topology:
@@ -89,7 +92,6 @@ class Topology:
     )
     lattice: PymatgenLattice | None = None
     properties: dict[str, dict[str, Any]] = field(default_factory=dict)
-
 
     @classmethod
     def from_cgd(cls, filename: str) -> Topology:
@@ -108,16 +110,16 @@ class Topology:
 
         if not os.path.exists(filename):
             raise FileNotFoundError(f"File '{filename}' not found.")
-        
+
         lattice, atom_labels, atoms, edges = parse_cgd(filename)
         neighbour_list = process_neighbour_list(edges, atoms, atom_labels)
 
         # Create Node instances
         all_nodes = [
             Node(
-                node_id=i + 1, 
+                node_id=i + 1,
                 node_type=label,
-                frac_coord=frac_coord if atoms is not None else None
+                frac_coord=frac_coord if atoms is not None else None,
             )
             for i, (label, frac_coord) in enumerate(zip(atom_labels, atoms))
             if atoms is not None
@@ -127,7 +129,7 @@ class Topology:
 
     def get_rings(self, depth: int = 12, strong: bool = False) -> RingsResults:
         """Computes or retrieves ring statistics for the network.
-        
+
         Parameters
         ----------
         depth
@@ -147,36 +149,43 @@ class Topology:
             return self.properties[label]
 
         # compute rings.
-        compute_rings = RS.run_strong_rings if strong else RS.run_rings
+        compute_rings = run_strong_rings if strong else run_rings
         rcount, _, rnodes = compute_rings(self.edges, depth)
+
+        # conversions needed.
+        rcount = np.array(rcount)
+        converted_rnodes = [
+            [[(t[0], list(t[1])) for t in ring] for ring in node]
+            for node in rnodes
+        ]
 
         # store and return results.
         results = RingsResults(
             depth=depth,
             rings_are_strong=strong,
             ring_size_count=RingSizeCounts(*rcount.T),
-            clusters=get_clusters(self, rnodes),
+            clusters=get_clusters(self, converted_rnodes),
         )
 
         self.properties[label] = results
 
         return results
-    
+
     def get_topological_genome(self) -> str:
-        """ Returns a string representation of the network topology. """
+        """Returns a string representation of the network topology."""
 
         if "topological_genome" in self.properties:
             return self.properties["topological_genome"]
-    
+
         nodes = get_all_node_frac_coords(self.nodes)
         cell_lengths = self.lattice.lengths
         cell_angles = self.lattice.angles
 
-        topology_genome = RS.get_topological_genome(
-            nodes.T, # transpose to get shape (3, N) for Julia. 
-            self.edges, 
-            cell_lengths, 
-            cell_angles
+        topology_genome = get_topological_genome(
+            nodes,  # transpose to get shape (3, N) for Julia.
+            self.edges,
+            cell_lengths,
+            cell_angles,
         )
 
         self.properties["topological_genome"] = topology_genome
@@ -212,7 +221,6 @@ class Node:
     node_type: str | None = "Si"
     frac_coord: npt.NDArray[np.floating] | None = field(default=None)
     cart_coord: npt.NDArray[np.floating] | None = field(default=None)
-
     is_shifted: bool = field(default=False)
 
     def apply_image_shift(
@@ -220,8 +228,8 @@ class Node:
         lattice: PymatgenLattice,
         image_shift: npt.NDArray[np.int_],
     ) -> Node:
-        """Apply the image shift to this node and return a new Node object. 
-        
+        """Apply the image shift to this node and return a new Node object.
+
         Parameters
         ----------
         lattice
@@ -233,31 +241,31 @@ class Node:
         -------
         A new Node object with the shifted coordinates.
         """
-        
+
         if self.frac_coord is None and self.cart_coord is None:
             raise ValueError(
                 "Both `frac_coord` and `cart_coord` are missing; "
                 "cannot compute shifted coordinates."
             )
-        
+
         if self.frac_coord is not None:
             frac_coord = self.frac_coord
         else:
             frac_coord = lattice.get_fractional_coords(self.cart_coord)
-        
+
         shifted_frac = frac_coord + image_shift
         shifted_cart = lattice.get_cartesian_coords(shifted_frac)
-        
+
         return Node(
             node_id=self.node_id,
             node_type=self.node_type,
             frac_coord=shifted_frac,
             cart_coord=shifted_cart,
-            is_shifted=True
+            is_shifted=True,
         )
-    
+
     def __post_init__(self) -> None:
-        """ Ensure coordinates are NumPy arrays if provided. """
+        """Ensure coordinates are NumPy arrays if provided."""
         self.sort_index = self.node_id
         if self.frac_coord is not None:
             self.frac_coord = np.array(self.frac_coord, dtype=np.float64)
@@ -265,16 +273,15 @@ class Node:
             self.cart_coord = np.array(self.cart_coord, dtype=np.float64)
 
     def __repr__(self) -> str:
-
         name = "Node" if not self.is_shifted else "ShiftedNode"
         info = {"node_id": self.node_id, "node_type": self.node_type}
 
         if self.frac_coord is not None:
             formatted_coords = np.array2string(
-                np.round(self.frac_coord, 2), 
-                precision=2, 
-                separator=", ", 
-                floatmode="fixed"
+                np.round(self.frac_coord, 2),
+                precision=2,
+                separator=", ",
+                floatmode="fixed",
             )
             info["frac_coord"] = formatted_coords
 
@@ -283,7 +290,7 @@ class Node:
                 np.round(self.cart_coord, 2),
                 precision=2,
                 separator=", ",
-                floatmode="fixed"
+                floatmode="fixed",
             )
             info["cart_coord"] = formatted_coords
 

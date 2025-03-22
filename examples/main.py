@@ -7,7 +7,7 @@ from fmt import footer, header, options  # noqa: I001
 
 
 def main(struct_name: str):
-    """ Quick analysis of the alpha-cristobalite (dia) structure. """
+    """Quick analysis of the alpha-cristobalite (dia) structure."""
 
     header(f"{struct_name} structure analysis")
 
@@ -23,11 +23,7 @@ def main(struct_name: str):
 
     # check rings.
     rings = topology.get_rings(depth=6)
-    print(
-        "This the summary of the rings analysis:\n\n", 
-        rings, 
-        end="\n\n"
-    )
+    print("This the summary of the rings analysis:\n\n", rings, end="\n\n")
 
     # print the ring sizes.
     print("The ring sizes are:\n")
@@ -42,9 +38,9 @@ def main(struct_name: str):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "struct_name", 
+        "struct_name",
         help="The name of the structure to analyse.",
-        choices=options()
+        choices=options(),
     )
     args = parser.parse_args()
     main(args.struct_name)

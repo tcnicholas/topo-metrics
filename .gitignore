@@ -1,4 +1,4 @@
-# Python-generated files
+# python-generated files
 __pycache__/
 *.py[oc]
 build/
@@ -8,7 +8,11 @@ wheels/
 *.ipynb_checkpoints/
 **/.julia_setup_done
 
-# Virtual environments
+# test coverage
+**/.coverage
+coverage.xml
+
+# virtual environments
 .venv
 
 # ruff

@@ -9,12 +9,9 @@ from pymatgen.core.lattice import Lattice as PymatgenLattice
 
 
 def parse_cgd(
-    filename: str
+    filename: str,
 ) -> tuple[
-    PymatgenLattice, 
-    list[str],
-    npt.NDArray[np.floating],
-    list[list[Any]]
+    PymatgenLattice, list[str], npt.NDArray[np.floating], list[list[Any]]
 ]:
     """
     Parses a CGD file and extracts lattice, atoms, and edges.
@@ -23,7 +20,7 @@ def parse_cgd(
     ----------
     filename
         The path to the CGD file.
-    
+
     Returns
     -------
     - lattice: The lattice of the network.
@@ -41,18 +38,15 @@ def parse_cgd(
     edges = []
 
     with open(filename) as file:
-
         for line in file:
             tokens = line.split()
             if not tokens:
                 continue
 
             match tokens[0]:
-
                 case "cell":
                     lattice = np.array(
-                        list(map(float, tokens[1:])), 
-                        dtype=np.float64
+                        list(map(float, tokens[1:])), dtype=np.float64
                     )
 
                 case "atom":
@@ -91,13 +85,12 @@ def process_neighbour_list(
     The neighbour list of the network, where each row corresponds to a pair of
     connected nodes and the applied image shift to the second node.
     """
-    
+
     # create a mapping from atom label to index for fast lookups
     label_to_index = {label: i + 1 for i, label in enumerate(atom_labels)}
 
     neighbour_list = []
     for edge in edges:
-
         node_label, frac_coords = edge[0], np.array(edge[1:], dtype=np.float64)
 
         if node_label not in label_to_index:
@@ -108,7 +101,8 @@ def process_neighbour_list(
 
         dists = (
             np.linalg.norm(atom_frac_coords - wrapped_coords, axis=1)
-            if atom_frac_coords is not None else None
+            if atom_frac_coords is not None
+            else None
         )
         closest_atom_idx = np.argmin(dists) if dists is not None else None
 
@@ -122,7 +116,8 @@ def process_neighbour_list(
             neighbour_list.append([node1, node2, *img])
 
     neighbour_list = (
-        np.array(neighbour_list, dtype=int) if neighbour_list 
+        np.array(neighbour_list, dtype=int)
+        if neighbour_list
         else np.empty((0, 5), dtype=int)
     )
 
