@@ -1,0 +1,100 @@
+[build-system]
+requires = ["setuptools>=65.0.0", "wheel", "julia>=0.6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "topo-metrics"
+version = "0.0.13"
+description = "Topological analysis tools for network materials."
+readme = "README.md"
+authors = [{ name = "Thomas Nicholas", email = "tcnicholas@me.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "setuptools",
+    "wheel",
+    "pymatgen>=2025.3.10",
+    "pytest>=8.3.5",
+    "juliacall>=0.9.24",
+]
+requires-python = ">=3.10"
+
+[tool.setuptools]
+packages = ["topo_metrics", "topo_metrics.RingStatistics"]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.package-data]
+topo_metrics = ["RingStatistics/**/*"]
+
+[project.urls]
+Homepage = "https://github.com/tcnicholas/topo-metrics"
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+dev = ["bumpver", "ruff"]
+publish = ["build", "twine"]
+
+[tool.bumpver]
+current_version = "0.0.13"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "bump {old_version} -> {new_version}"
+commit = true
+tag = true
+push = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"src/topo_metrics/__init__.py" = ["{version}"]
+
+[tool.ruff]
+line-length = 80
+indent-width = 4
+target-version = "py38"
+extend-include = ["*.ipynb", "*.pyi", "*.toml"]
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "B", "SIM", "I"]
+ignore = ["SIM300", "E402", "E703", "F722", "UP037", "F821", "B018", "E741"]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[dependency-groups]
+dev = [
+    "bumpver>=2024.1130",
+    "notebook>=7.3.2",
+    "ruff>=0.9.7",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.coverage.paths]
+source = ["src", "*/site-packages"]
+
+[tool.coverage.run]
+branch = true
+source = ["topo_metrics"]
+omit = ["*/__init__.py", "paths.py"]
+
+[tool.coverage.report]
+exclude_also = ["def __repr__"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+python_files = ["test_*.py", "tests.py"]
+addopts = "--cov=topo_metrics --cov-report=xml --cov-report=term-missing"
