@@ -48,6 +48,9 @@ def largest_ring_size(cluster: Cluster) -> int:
     Get the largest ring size in the ``cluster``.
     """
 
+    if not cluster.rings:
+        return 0
+
     return max(len(ring) for ring in cluster.rings)
 
 
@@ -429,6 +432,12 @@ def get_carvs_vector(
 
     if isinstance(cluster, Cluster):
         size, counts = np.unique(get_ring_sizes(cluster), return_counts=True)
+
+        # guard against empty clusters.
+        if not len(size):
+            size = np.array([1])
+            counts = np.array([0])
+
         max_size = max(size) if max_size is None else max_size
 
         carvs = np.zeros(shape=(max_size,), dtype=np.int_)

@@ -27,10 +27,11 @@ def main(struct_name: str):
 
     # print the ring sizes.
     print("The ring sizes are:\n")
-    print(f"{'Size':>5} | {'Count':>5}")
-    print("-" * 13)
+    print("Ring Size | Count")
+    print("----------|------")
     for size, count in rings.ring_size_count:
-        print(f"{size:>4}  | {count:>3} ")
+        if count > 0:
+            print(f"{size:^9} | {count:^5}")
 
     footer()
 

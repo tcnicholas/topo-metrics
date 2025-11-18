@@ -146,7 +146,9 @@ class Topology:
 
         # check if cached results exist and return them.
         if label in self.properties:
-            return self.properties[label]
+            result = self.properties[label]
+            assert isinstance(result, RingsResults)
+            return result
 
         # compute rings.
         compute_rings = run_strong_rings if strong else run_rings
@@ -172,12 +174,24 @@ class Topology:
         return results
 
     def get_topological_genome(self) -> str:
-        """Returns a string representation of the network topology."""
+        """
+        Returns a the topology code for the framework.
+
+        Notes
+        -----
+        - The topological genome is a finite series of numbers that is provably
+          unique for each net.
+        - It can be comptued in polynomial time with respect to the size of the
+          net.
+        """
 
         if "topological_genome" in self.properties:
-            return self.properties["topological_genome"]
+            return str(self.properties["topological_genome"])
 
         nodes = get_all_node_frac_coords(self.nodes)
+        assert self.lattice is not None, (
+            "Lattice must be defined to compute genome."
+        )
         cell_lengths = self.lattice.lengths
         cell_angles = self.lattice.angles
 
