@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
-from typing import Any, NamedTuple
+from typing import Any, Iterable, NamedTuple
 
+import ase
 import numpy as np
 import numpy.typing as npt
 from pymatgen.core.lattice import Lattice as PymatgenLattice
@@ -20,6 +21,7 @@ from topo_metrics.clusters import (
     get_vertex_symbol,
 )
 from topo_metrics.io.cgd import parse_cgd, process_neighbour_list
+from topo_metrics.neighbours import autoreduce_neighborlist
 from topo_metrics.rings import RingSizeCounts
 from topo_metrics.utils import uniform_repr
 
@@ -92,6 +94,59 @@ class Topology:
     )
     lattice: PymatgenLattice | None = None
     properties: dict[str, dict[str, Any]] = field(default_factory=dict)
+
+    @classmethod
+    def from_ase(
+        cls,
+        ase_atoms: ase.Atoms, 
+        cutoff: float,
+        remove_types: Iterable[Any] | None = None,
+        remove_degree2: bool = False
+    ) -> Topology:
+        """
+        Creates a Topology object from an ASE Atoms object.
+
+        Parameters
+        ----------
+        ase_atoms
+            The ASE Atoms object representing the structure.
+
+        Returns
+        -------
+        A Topology object representing the network as nodes and edges.
+        """
+
+        try:
+            from vesin import ase_neighbor_list
+        except ImportError:
+            from ase.neighborlist import neighbor_list as ase_neighbor_list
+
+        lattice = None
+        if all(ase_atoms.pbc):
+            lattice = PymatgenLattice(ase_atoms.cell)
+
+        frac_coords = ase_atoms.get_scaled_positions()
+        symbols = ase_atoms.get_chemical_symbols()
+
+        #TODO: allow dict cutoffs in future for different atom types.
+        # get neighbor list with single cutoff.
+        i, j, S = ase_neighbor_list("ijS", ase_atoms, cutoff=cutoff)
+        edges = np.vstack([i + 1, j + 1, S.T]).T.astype(np.int_)
+
+        if remove_types is not None or remove_degree2:
+            frac_coords, symbols, edges, _ = autoreduce_neighborlist(
+                frac_coords,
+                symbols,
+                edges,
+                remove_types=remove_types,
+                remove_degree2=remove_degree2
+            )
+        
+        nodes = []
+        for idx, (frac, symbol) in enumerate(zip(frac_coords, symbols)):
+            nodes.append(Node(node_id=idx, node_type=symbol, frac_coord=frac))
+
+        return cls(nodes=nodes, edges=edges, lattice=lattice)
 
     @classmethod
     def from_cgd(cls, filename: str) -> Topology:
