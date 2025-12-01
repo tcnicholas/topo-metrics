@@ -4,7 +4,7 @@
 
 ![PyPI - Version](https://img.shields.io/pypi/v/topo-metrics)
 [![GitHub License](https://img.shields.io/github/license/tcnicholas/topo-metrics)](LICENSE.md)
-[![](https://github.com/tcnicholas/topo-metrics/actions/workflows/tests.yaml/badge.svg?branch=main)](https://github.com/tcnicholas/topo-metric/actions/workflows/tests.yaml)
+[![](https://github.com/tcnicholas/topo-metrics/actions/workflows/tests.yaml/badge.svg?branch=main)](https://github.com/tcnicholas/topo-metrics/actions/workflows/tests.yaml)
 [![codecov](https://codecov.io/gh/tcnicholas/topo-metrics/graph/badge.svg?token=S3K9PSK7NA)](https://codecov.io/gh/tcnicholas/topo-metrics)
 </div>
 
