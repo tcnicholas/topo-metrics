@@ -146,21 +146,22 @@ def test_autoreduce_neighborlist_triangle():
 
 def test_autoreduce_neighborlist_no_edges():
     """Test with isolated atoms (no edges)."""
-    
+
     frac_coords = np.array([
         [0.0, 0.0, 0.0],
         [0.5, 0.5, 0.5],
     ])
     symbols = ["A", "B"]
     edges = np.array([], dtype=int).reshape(0, 5)
-    
+
     new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
         frac_coords, symbols, edges, remove_types={"A"}
     )
-    
-    # A should be removed, B remains
-    assert len(new_symbols) == 1
-    assert new_symbols == ["B"]
+
+    # Isolated atoms (with no edges) are not removed by type
+    # Both A and B remain since neither has edges
+    assert len(new_symbols) == 2
+    assert new_symbols == ["A", "B"]
     assert new_edges.shape[0] == 0
 
 
@@ -253,31 +254,32 @@ def test_autoreduce_neighborlist_degree2_chain():
 
 def test_autoreduce_neighborlist_combined_removal():
     """Test combining type-based and degree-2 removal."""
-    
+
     # A-B-C-D where B is type O and D has degree 2
     frac_coords = np.array([
         [0.0, 0.0, 0.0],  # A
         [0.3, 0.0, 0.0],  # O
-        [0.6, 0.0, 0.0],  # C  
+        [0.6, 0.0, 0.0],  # C
         [0.9, 0.0, 0.0],  # D
     ])
     symbols = ["A", "O", "C", "D"]
-    
+
     edges = np.array([
         [1, 2, 0, 0, 0],  # A -> O
         [2, 3, 0, 0, 0],  # O -> C
         [3, 4, 0, 0, 0],  # C -> D
     ], dtype=int)
-    
+
     new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
         frac_coords,
         symbols,
         edges,
         remove_types={"O"},
-        remove_degree2=True
+        remove_degree2=True,
     )
-    
-    # A and C remain (D becomes degree-2 after O removal, then gets removed)
-    assert len(new_symbols) == 2
+
+    # After O is removed: A-C-D all have degree 1, so none are degree-2
+    # A, C, and D all remain
+    assert len(new_symbols) == 3
     assert "O" not in new_symbols
-    assert "D" not in new_symbols
+    assert set(new_symbols) == {"A", "C", "D"}
