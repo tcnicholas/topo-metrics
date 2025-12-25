@@ -87,3 +87,91 @@ def test_min_count_empty():
 
     with pytest.raises(ValueError, match="The list X cannot be empty"):
         min_count([])
+
+
+def test_uniform_repr_no_stringify():
+    """Test uniform_repr with stringify=False."""
+
+    result = uniform_repr(
+        "TestObject", "value", key="test", stringify=False
+    )
+    # Without stringify, strings should not be quoted
+    assert result == 'TestObject(value, key=test)'
+
+
+def test_uniform_repr_custom_indent():
+    """Test uniform_repr with custom indent size."""
+
+    result = uniform_repr(
+        "TestObject",
+        "a" * 30,
+        "b" * 30,
+        max_width=50,
+        indent_size=4,
+    )
+    # Check that indentation is correct (4 spaces)
+    lines = result.split('\n')
+    if len(lines) > 1:
+        assert lines[1].startswith('    ')
+
+
+def test_uniform_repr_newline_in_value():
+    """Test uniform_repr with newline characters in values."""
+
+    result = uniform_repr(
+        "TestObject",
+        "line1\nline2",
+        max_width=10,
+    )
+    # Should trigger multiline mode due to newline
+    assert '\n' in result
+    assert 'TestObject(\n' in result
+
+
+def test_uniform_repr_only_positional():
+    """Test uniform_repr with only positional arguments."""
+
+    result = uniform_repr("TestObject", 1, 2, 3)
+    assert result == 'TestObject(1, 2, 3)'
+
+
+def test_uniform_repr_only_keyword():
+    """Test uniform_repr with only keyword arguments."""
+
+    result = uniform_repr("TestObject", key1="val1", key2="val2")
+    assert result == 'TestObject(key1="val1", key2="val2")'
+
+
+def test_uniform_repr_integer_values():
+    """Test uniform_repr with integer values (no stringify)."""
+
+    result = uniform_repr("TestObject", 1, 2, key=3)
+    assert result == 'TestObject(1, 2, key=3)'
+
+
+def test_to_tuple_generator():
+    """Test to_tuple with a generator."""
+
+    gen = (x for x in [1, 2, 3])
+    result = to_tuple(gen)
+    assert result == (1, 2, 3)
+
+
+def test_to_tuple_dict():
+    """Test to_tuple with a dict (iterable but not list)."""
+
+    # Dict iteration gives keys
+    result = to_tuple({"a": 1, "b": 2})
+    assert isinstance(result, tuple)
+    assert len(result) == 2
+
+
+def test_to_tuple_mixed_types():
+    """Test to_tuple with mixed nested types."""
+
+    input_data = [1, "string", [2, 3], {"a": 1}]
+    result = to_tuple(input_data)
+    assert isinstance(result, tuple)
+    assert result[0] == 1
+    assert result[1] == "string"
+    assert result[2] == (2, 3)
