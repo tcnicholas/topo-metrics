@@ -200,6 +200,13 @@ class Topology:
         ----------
         depth
             The maximum depth to search for rings.
+
+        Notes
+        -----
+        - In the previous implementation, this method returned the clusters of 
+          rings at each node. This is obtained instead via the `get_clusters`
+          method. This method now returns all unique rings in the network as
+          RingGeometry objects.
         """
 
         if self.lattice is None:

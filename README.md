@@ -19,3 +19,6 @@ uv venv topo-throwaway --python 3.10
 source topo-throwaway/bin/activate
 uv pip install topo-metrics
 ```
+
+
+### Docs (coming soon!)
