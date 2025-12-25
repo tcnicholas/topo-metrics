@@ -156,9 +156,9 @@ def test_carvs_str_fractional_count():
     c = CARVS(vector=np.array([1.5, 2.3]), spread=0.0, is_single_node=False)
     s = str(c)
     
-    # Should format fractional counts with one decimal place
-    assert "1.5" in s or "1(1.5)" in s
-    assert "2.3" in s or "2(2.3)" in s
+    # Should format fractional counts with one decimal place in the exact expected format
+    expected_prefix = "{1(1.5).2(2.3)}"
+    assert s == expected_prefix or s.startswith(expected_prefix + " σ=")
 
 
 def test_carvs_from_list_different_lengths():
