@@ -171,7 +171,6 @@ def test_ring_size_counts_repr_nonzero():
 
 def test_ring_repr(sample_topology):
     """Test Ring __repr__ method."""
-    from topo_metrics.rings import Ring
 
     node_list = [
         (1, np.array([0, 0, 0])),

@@ -543,26 +543,24 @@ def test_topology_repr(sample_topology):
 
 def test_rings_results_repr_single_vertex_symbol():
     """Test RingsResults __repr__ with a single vertex symbol."""
-    from topo_metrics.topology import RingsResults
-    from topo_metrics.rings import RingSizeCounts, Ring
     from topo_metrics.clusters import Cluster
+    from topo_metrics.rings import Ring, RingSizeCounts
+    from topo_metrics.topology import RingsResults
 
     # Create a simple cluster with one ring
-    nodes = [Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 4)]
-    ring = Ring(
-        nodes=nodes,
-        angle=((1, (0, 0, 0)), (2, (0, 0, 0)))
-    )
+    nodes = [
+        Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 4)
+    ]
+    ring = Ring(nodes=nodes, angle=((1, (0, 0, 0)), (2, (0, 0, 0))))
     cluster = Cluster(central_node_id=1, rings=[ring])
 
     result = RingsResults(
         depth=10,
         rings_are_strong=False,
         ring_size_count=RingSizeCounts(
-            sizes=np.array([3]),
-            counts=np.array([1])
+            sizes=np.array([3]), counts=np.array([1])
         ),
-        clusters=[cluster]
+        clusters=[cluster],
     )
 
     repr_str = repr(result)
@@ -575,17 +573,21 @@ def test_rings_results_repr_single_vertex_symbol():
 
 def test_rings_results_repr_multiple_vertex_symbols():
     """Test RingsResults __repr__ with multiple different vertex symbols."""
-    from topo_metrics.topology import RingsResults
-    from topo_metrics.rings import RingSizeCounts, Ring
     from topo_metrics.clusters import Cluster
+    from topo_metrics.rings import Ring, RingSizeCounts
+    from topo_metrics.topology import RingsResults
 
     # Create clusters that will have different vertex symbols
-    nodes1 = [Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 4)]
-    nodes2 = [Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 5)]
-    
+    nodes1 = [
+        Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 4)
+    ]
+    nodes2 = [
+        Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 5)
+    ]
+
     ring1 = Ring(nodes=nodes1, angle=((1, (0, 0, 0)), (2, (0, 0, 0))))
     ring2 = Ring(nodes=nodes2, angle=((1, (0, 0, 0)), (2, (0, 0, 0))))
-    
+
     cluster1 = Cluster(central_node_id=1, rings=[ring1])
     cluster2 = Cluster(central_node_id=2, rings=[ring2])
 
@@ -593,10 +595,9 @@ def test_rings_results_repr_multiple_vertex_symbols():
         depth=10,
         rings_are_strong=False,
         ring_size_count=RingSizeCounts(
-            sizes=np.array([3, 4]),
-            counts=np.array([1, 1])
+            sizes=np.array([3, 4]), counts=np.array([1, 1])
         ),
-        clusters=[cluster1, cluster2]
+        clusters=[cluster1, cluster2],
     )
 
     repr_str = repr(result)
@@ -605,15 +606,18 @@ def test_rings_results_repr_multiple_vertex_symbols():
 
 
 def test_rings_results_repr_many_vertex_symbols():
-    """Test RingsResults __repr__ with many vertex symbols (should truncate)."""
-    from topo_metrics.topology import RingsResults
-    from topo_metrics.rings import RingSizeCounts, Ring
+    """Test RingsResults __repr__ with many vertex symbols (truncate)."""
     from topo_metrics.clusters import Cluster
+    from topo_metrics.rings import Ring, RingSizeCounts
+    from topo_metrics.topology import RingsResults
 
     # Create 15 different clusters to test truncation at >10
     clusters = []
     for i in range(1, 16):
-        nodes = [Node(node_id=j, frac_coord=np.random.rand(3)) for j in range(1, i+3)]
+        nodes = [
+            Node(node_id=j, frac_coord=np.random.rand(3))
+            for j in range(1, i + 3)
+        ]
         ring = Ring(nodes=nodes, angle=((1, (0, 0, 0)), (2, (0, 0, 0))))
         clusters.append(Cluster(central_node_id=i, rings=[ring]))
 
@@ -621,10 +625,9 @@ def test_rings_results_repr_many_vertex_symbols():
         depth=10,
         rings_are_strong=False,
         ring_size_count=RingSizeCounts(
-            sizes=np.arange(3, 18),
-            counts=np.ones(15, dtype=int)
+            sizes=np.arange(3, 18), counts=np.ones(15, dtype=int)
         ),
-        clusters=clusters
+        clusters=clusters,
     )
 
     repr_str = repr(result)

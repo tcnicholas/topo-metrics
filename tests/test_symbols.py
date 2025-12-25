@@ -143,9 +143,11 @@ def test_carvs_repr():
 def test_carvs_str_integer_count():
     """Test CARVS string representation with integer counts."""
 
-    c = CARVS(vector=np.array([1.0, 2.0, 3.0]), spread=0.0, is_single_node=False)
+    c = CARVS(
+        vector=np.array([1.0, 2.0, 3.0]), spread=0.0, is_single_node=False
+    )
     s = str(c)
-    
+
     # Should format counts as integers when they're whole numbers
     assert "{1.2(2).3(3)}" in s
 
@@ -155,8 +157,9 @@ def test_carvs_str_fractional_count():
 
     c = CARVS(vector=np.array([1.5, 2.3]), spread=0.0, is_single_node=False)
     s = str(c)
-    
-    # Should format fractional counts with one decimal place in the exact expected format
+
+    # Should format fractional counts with one decimal place in the exact
+    # expected format
     expected_prefix = "{1(1.5).2(2.3)}"
     assert s == expected_prefix or s.startswith(expected_prefix + " σ=")
 
@@ -206,11 +209,11 @@ def test_pad_carvs_per_atom_single_array():
 
 
 def test_pad_carvs_per_atom_different_heights():
-    """Test pad_carvs_per_atom with arrays of different heights but same width."""
+    """Test pad_carvs_per_atom with arrays of different heights."""
 
     a = [np.ones((2, 2)), np.ones((3, 2))]
     result = pad_carvs_per_atom(a)
-    
+
     # Width should match
     assert all(r.shape[1] == 2 for r in result)
 
