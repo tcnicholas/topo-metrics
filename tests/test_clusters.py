@@ -446,3 +446,16 @@ def test_cluster_repr(sample_cluster):
     assert "node_id" in repr_str
     assert "n_rings" in repr_str
     assert "CARVS" in repr_str
+
+
+def test_get_carvs_vector_empty_cluster():
+    """Test get_carvs_vector with an empty cluster (no rings)."""
+
+    empty_cluster = Cluster(central_node_id=1, rings=[])
+    result = get_carvs_vector(empty_cluster)
+
+    # Should return a CARVS with vector of zeros
+    assert result.is_single_node is True
+    assert result.spread == 0.0
+    assert len(result.vector) == 1
+    assert result.vector[0] == 0
