@@ -1,0 +1,29 @@
+# python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+*.ipynb_checkpoints/
+**/.julia_setup_done
+
+# test coverage
+**/.coverage
+coverage.xml
+
+# virtual environments
+.venv
+
+# ruff
+.ruff_cache/
+
+# my files
+.vscode
+.tests
+**/.DS_Store
+local.ipynb
+.local
+.examples
+docs
+examples-1.ipynb
