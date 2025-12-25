@@ -394,3 +394,55 @@ def test_get_carvs_std_dev_single_vector():
     result = get_carvs_std_dev(vector)
 
     assert result == 0.0
+
+
+def test_shares_edge():
+    """Test the shares_edge function."""
+    from topo_metrics.clusters import shares_edge
+
+    # Angles that share an edge
+    angle1 = ((1, (0, 0, 0)), (2, (0, 0, 0)))
+    angle2 = ((2, (0, 0, 0)), (3, (0, 0, 0)))
+    assert shares_edge(angle1, angle2) is True
+
+    # Angles that don't share an edge
+    angle3 = ((4, (0, 0, 0)), (5, (0, 0, 0)))
+    assert shares_edge(angle1, angle3) is False
+
+    # Same angle
+    assert shares_edge(angle1, angle1) is True
+
+
+def test_get_unique_angles(sample_cluster):
+    """Test getting unique angles from a cluster."""
+    from topo_metrics.clusters import get_unique_angles
+
+    unique_angles = get_unique_angles(sample_cluster)
+    assert isinstance(unique_angles, list)
+    # Should have unique angles
+    assert len(unique_angles) == len(set(unique_angles))
+
+
+def test_largest_ring_size_empty():
+    """Test largest_ring_size with empty cluster."""
+
+    empty_cluster = Cluster(central_node_id=1, rings=[])
+    assert largest_ring_size(empty_cluster) == 0
+
+
+def test_smallest_and_largest_ring_size(sample_cluster):
+    """Test smallest and largest ring sizes."""
+
+    # Sample cluster has a 4-ring and 5-ring
+    assert smallest_ring_size(sample_cluster) == 4
+    assert largest_ring_size(sample_cluster) == 5
+
+
+def test_cluster_repr(sample_cluster):
+    """Test the __repr__ method of Cluster."""
+
+    repr_str = repr(sample_cluster)
+    assert "Cluster" in repr_str
+    assert "node_id" in repr_str
+    assert "n_rings" in repr_str
+    assert "CARVS" in repr_str

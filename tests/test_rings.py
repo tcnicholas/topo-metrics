@@ -139,3 +139,61 @@ def test_reverse_due_to_image_values():
     ]
 
     assert_node_lists_equal(result, expected)
+
+
+def test_ring_size_counts_repr_empty():
+    """Test RingSizeCounts __repr__ with no rings."""
+
+    sizes = np.array([4, 5, 6])
+    counts = np.array([0, 0, 0])  # All zero counts
+    rsc = RingSizeCounts(sizes, counts)
+
+    repr_str = repr(rsc)
+    assert "RingSizeCounts" in repr_str
+    assert "n_rings" in repr_str
+    assert "0" in repr_str  # Should show 0 rings
+
+
+def test_ring_size_counts_repr_nonzero():
+    """Test RingSizeCounts __repr__ with rings."""
+
+    sizes = np.array([4, 5, 6])
+    counts = np.array([10, 0, 20])
+    rsc = RingSizeCounts(sizes, counts)
+
+    repr_str = repr(rsc)
+    assert "RingSizeCounts" in repr_str
+    assert "30" in repr_str or "n_rings" in repr_str  # Total rings
+    assert "min" in repr_str
+    assert "max" in repr_str
+
+
+def test_ring_repr(sample_topology):
+    """Test Ring __repr__ method."""
+    from topo_metrics.rings import Ring
+
+    node_list = [
+        (1, np.array([0, 0, 0])),
+        (2, np.array([0, 0, 0])),
+        (3, np.array([0, 0, 0])),
+    ]
+    ring = node_list_to_ring(sample_topology, node_list, central_node_id=1)
+
+    repr_str = repr(ring)
+    assert "Ring" in repr_str
+    assert "n" in repr_str
+
+
+def test_ring_size_property(sample_topology):
+    """Test Ring size property."""
+
+    node_list = [
+        (1, np.array([0, 0, 0])),
+        (2, np.array([0, 0, 0])),
+        (3, np.array([0, 0, 0])),
+        (4, np.array([0, 0, 0])),
+    ]
+    ring = node_list_to_ring(sample_topology, node_list, central_node_id=1)
+
+    assert ring.size == 4
+    assert len(ring) == 4
