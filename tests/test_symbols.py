@@ -276,7 +276,7 @@ def test_carvs_str_skip_zero_counts():
     s = str(c)
     
     # Should not include sizes with count < 1
-    assert "1." not in s or "{" in s  # Either excluded or in braces
+    assert "1." not in s  # Size 1 has count 0 and must be excluded
     assert "3." not in s  # Size 3 has count 0
 
 
