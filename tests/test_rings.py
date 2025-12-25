@@ -163,7 +163,8 @@ def test_ring_size_counts_repr_nonzero():
 
     repr_str = repr(rsc)
     assert "RingSizeCounts" in repr_str
-    assert "30" in repr_str or "n_rings" in repr_str  # Total rings
+    assert "n_rings" in repr_str
+    assert "30" in repr_str  # Total rings
     assert "min" in repr_str
     assert "max" in repr_str
 
