@@ -529,3 +529,179 @@ def test_get_topological_genome_mocked(mock_get_genome, sample_topology):
 
     result2 = topology.get_topological_genome()  # 💥 Cache
     assert result2 == result
+
+
+def test_topology_repr(sample_topology):
+    """Test the __repr__ method of Topology."""
+
+    repr_str = repr(sample_topology)
+    assert "Topology" in repr_str
+    assert "nodes" in repr_str
+    assert "edges" in repr_str
+    assert "has_lattice" in repr_str
+
+
+def test_rings_results_repr_single_vertex_symbol():
+    """Test RingsResults __repr__ with a single vertex symbol."""
+    from topo_metrics.topology import RingsResults
+    from topo_metrics.rings import RingSizeCounts, Ring
+    from topo_metrics.clusters import Cluster
+
+    # Create a simple cluster with one ring
+    nodes = [Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 4)]
+    ring = Ring(
+        nodes=nodes,
+        angle=((1, (0, 0, 0)), (2, (0, 0, 0)))
+    )
+    cluster = Cluster(central_node_id=1, rings=[ring])
+
+    result = RingsResults(
+        depth=10,
+        rings_are_strong=False,
+        ring_size_count=RingSizeCounts(
+            sizes=np.array([3]),
+            counts=np.array([1])
+        ),
+        clusters=[cluster]
+    )
+
+    repr_str = repr(result)
+    assert "RingsResults" in repr_str
+    assert "depth" in repr_str
+    assert "strong_rings" in repr_str
+    assert "ring_size_count" in repr_str
+    assert "VertexSymbol" in repr_str
+
+
+def test_rings_results_repr_multiple_vertex_symbols():
+    """Test RingsResults __repr__ with multiple different vertex symbols."""
+    from topo_metrics.topology import RingsResults
+    from topo_metrics.rings import RingSizeCounts, Ring
+    from topo_metrics.clusters import Cluster
+
+    # Create clusters that will have different vertex symbols
+    nodes1 = [Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 4)]
+    nodes2 = [Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 5)]
+    
+    ring1 = Ring(nodes=nodes1, angle=((1, (0, 0, 0)), (2, (0, 0, 0))))
+    ring2 = Ring(nodes=nodes2, angle=((1, (0, 0, 0)), (2, (0, 0, 0))))
+    
+    cluster1 = Cluster(central_node_id=1, rings=[ring1])
+    cluster2 = Cluster(central_node_id=2, rings=[ring2])
+
+    result = RingsResults(
+        depth=10,
+        rings_are_strong=False,
+        ring_size_count=RingSizeCounts(
+            sizes=np.array([3, 4]),
+            counts=np.array([1, 1])
+        ),
+        clusters=[cluster1, cluster2]
+    )
+
+    repr_str = repr(result)
+    assert "RingsResults" in repr_str
+    assert "VertexSymbols" in repr_str  # Plural because multiple
+
+
+def test_rings_results_repr_many_vertex_symbols():
+    """Test RingsResults __repr__ with many vertex symbols (should truncate)."""
+    from topo_metrics.topology import RingsResults
+    from topo_metrics.rings import RingSizeCounts, Ring
+    from topo_metrics.clusters import Cluster
+
+    # Create 15 different clusters to test truncation at >10
+    clusters = []
+    for i in range(1, 16):
+        nodes = [Node(node_id=j, frac_coord=np.random.rand(3)) for j in range(1, i+3)]
+        ring = Ring(nodes=nodes, angle=((1, (0, 0, 0)), (2, (0, 0, 0))))
+        clusters.append(Cluster(central_node_id=i, rings=[ring]))
+
+    result = RingsResults(
+        depth=10,
+        rings_are_strong=False,
+        ring_size_count=RingSizeCounts(
+            sizes=np.arange(3, 18),
+            counts=np.ones(15, dtype=int)
+        ),
+        clusters=clusters
+    )
+
+    repr_str = repr(result)
+    assert "RingsResults" in repr_str
+    assert "..." in repr_str  # Should show ellipsis for truncation
+
+
+def test_topology_from_ase():
+    """Test creating Topology from ASE Atoms object."""
+    import ase
+
+    # Create a simple cubic structure
+    atoms = ase.Atoms(
+        symbols=["Si", "Si"],
+        positions=[[0, 0, 0], [1.5, 0, 0]],
+        cell=[3, 3, 3],
+        pbc=True
+    )
+
+    topology = Topology.from_ase(atoms, cutoff=2.0)
+
+    assert len(topology.nodes) == 2
+    assert topology.lattice is not None
+    assert len(topology.edges) > 0
+
+
+def test_topology_from_ase_with_removal():
+    """Test Topology.from_ase with atom removal."""
+    import ase
+
+    # Create structure with O atoms to remove
+    atoms = ase.Atoms(
+        symbols=["Si", "O", "Si"],
+        positions=[[0, 0, 0], [1.5, 0, 0], [3.0, 0, 0]],
+        cell=[6, 6, 6],
+        pbc=True
+    )
+
+    topology = Topology.from_ase(atoms, cutoff=2.0, remove_types={"O"})
+
+    # O should be removed
+    assert len(topology.nodes) == 2
+    assert all(node.node_type == "Si" for node in topology.nodes)
+
+
+def test_topology_from_ase_no_pbc():
+    """Test Topology.from_ase with non-periodic structure."""
+    import ase
+
+    atoms = ase.Atoms(
+        symbols=["C", "C"],
+        positions=[[0, 0, 0], [1.5, 0, 0]],
+        pbc=False  # No periodic boundary conditions
+    )
+
+    topology = Topology.from_ase(atoms, cutoff=2.0)
+
+    assert topology.lattice is None  # No lattice for non-periodic
+
+
+def test_node_post_init():
+    """Test Node __post_init__ sets defaults correctly."""
+
+    # Test with only node_id
+    node = Node(node_id=1)
+    assert node.node_type == "Si"
+    assert node.frac_coord is None
+    assert node.cart_coord is None
+    assert node.is_shifted is False
+
+    # Test with all parameters
+    node2 = Node(
+        node_id=2,
+        node_type="C",
+        frac_coord=np.array([0.5, 0.5, 0.5]),
+        cart_coord=np.array([1, 1, 1]),
+        is_shifted=True
+    )
+    assert node2.node_type == "C"
+    assert node2.is_shifted is True
