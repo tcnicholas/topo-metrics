@@ -255,7 +255,7 @@ def test_autoreduce_neighborlist_degree2_chain():
 def test_autoreduce_neighborlist_combined_removal():
     """Test combining type-based and degree-2 removal."""
 
-    # A-B-C-D where B is type O and D has degree 2
+    # A-O-C-D where O is type O (to remove) and C has degree 2
     frac_coords = np.array([
         [0.0, 0.0, 0.0],  # A
         [0.3, 0.0, 0.0],  # O
@@ -278,8 +278,9 @@ def test_autoreduce_neighborlist_combined_removal():
         remove_degree2=True,
     )
 
-    # After O is removed: A-C-D all have degree 1, so none are degree-2
-    # A, C, and D all remain
-    assert len(new_symbols) == 3
+    # After O is removed: A-C-D with C having degree 2
+    # Then C is removed (degree-2 removal): A-D remain
+    assert len(new_symbols) == 2
     assert "O" not in new_symbols
-    assert set(new_symbols) == {"A", "C", "D"}
+    assert "C" not in new_symbols
+    assert set(new_symbols) == {"A", "D"}
