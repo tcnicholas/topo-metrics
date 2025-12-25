@@ -484,15 +484,15 @@ def patched_run_rings(edges, depth):
     ],
 )
 @patch("topo_metrics._julia_wrappers.run_rings", side_effect=patched_run_rings)
-def test_get_rings_with_mocked_rs_run_rings(
+def test_get_clusters_with_mocked_rs_run_rings(
     mock_run_rings, sample_topology, strong_flag, label_key
 ):
-    """Test Topology.get_rings with mocked run_rings."""
+    """Test Topology.get_clusters with mocked run_rings."""
 
     topology = sample_topology
     topology.properties.clear()
 
-    result = topology.get_rings(depth=12, strong=strong_flag)
+    result = topology.get_clusters(depth=12, strong=strong_flag)
 
     assert isinstance(result, RingsResults)
     assert result.rings_are_strong is strong_flag
@@ -509,7 +509,7 @@ def test_get_rings_with_mocked_rs_run_rings(
 
     # Check caching
     assert (label_key, 12) in topology.properties
-    result_cached = topology.get_rings(depth=12, strong=strong_flag)
+    result_cached = topology.get_clusters(depth=12, strong=strong_flag)
     assert result_cached is result
 
 
