@@ -103,6 +103,7 @@ html_theme_options = {
             "name": "PyPI",
             "url": "https://pypi.org/project/topo-metrics",
             "icon": "fa-custom fa-pypi",
+            "type": "fontawesome",
         },
         {
             "name": "Bluesky",
@@ -134,6 +135,9 @@ html_context = {
 }
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
+html_js_files = [
+    ("custom-icons.js", {"defer": "defer"}),
+]
 
 source_suffix = {
     ".rst": "restructuredtext",
