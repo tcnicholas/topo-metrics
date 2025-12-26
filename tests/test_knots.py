@@ -413,7 +413,7 @@ def test_all_methods_two_points_return_zero():
 
 
 def test_directional_writhe_triple_zero_hits_elif_false_arc():
-    # Planar bow-tie: segments 0 and 2 cross in xy, but triple == 0 (purely planar)
+    # Planar bow-tie: segments 0 and 2 cross in xy, but triple == 0
     P = np.array(
         [
             [0.0, 0.0, 0.0],  # P0
