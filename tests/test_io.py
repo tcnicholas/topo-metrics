@@ -141,7 +141,7 @@ def test_process_neighbour_list_empty_edges():
     edges = []
     coords = np.array([[0.0, 0.0, 0.0]])
     atom_labels = ["A"]
-    
+
     neighbour_list = process_neighbour_list(edges, coords, atom_labels)
-    
+
     assert neighbour_list.shape == (0, 5)

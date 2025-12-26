@@ -11,7 +11,7 @@ from topo_metrics.utils import uniform_repr
 class VertexSymbol(NamedTuple):
     """
     Vertex Symbol (VS) representation.
-    
+
     Attributes
     ----------
     vector

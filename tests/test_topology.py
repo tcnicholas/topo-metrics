@@ -548,9 +548,7 @@ def test_rings_results_repr_single_vertex_symbol():
     from topo_metrics.topology import RingsResults
 
     # Create a simple cluster with one ring
-    nodes = [
-        Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 4)
-    ]
+    nodes = [Node(node_id=i, frac_coord=np.random.rand(3)) for i in range(1, 4)]
     ring = Ring(nodes=nodes, angle=((1, (0, 0, 0)), (2, (0, 0, 0))))
     cluster = Cluster(central_node_id=1, rings=[ring])
 
@@ -644,7 +642,7 @@ def test_topology_from_ase():
         symbols=["Si", "Si"],
         positions=[[0, 0, 0], [1.5, 0, 0]],
         cell=[3, 3, 3],
-        pbc=True
+        pbc=True,
     )
 
     topology = Topology.from_ase(atoms, cutoff=2.0)
@@ -663,7 +661,7 @@ def test_topology_from_ase_with_removal():
         symbols=["Si", "O", "Si"],
         positions=[[0, 0, 0], [1.5, 0, 0], [3.0, 0, 0]],
         cell=[6, 6, 6],
-        pbc=True
+        pbc=True,
     )
 
     topology = Topology.from_ase(atoms, cutoff=2.0, remove_types={"O"})
@@ -680,7 +678,7 @@ def test_topology_from_ase_no_pbc():
     atoms = ase.Atoms(
         symbols=["C", "C"],
         positions=[[0, 0, 0], [1.5, 0, 0]],
-        pbc=False  # No periodic boundary conditions
+        pbc=False,  # No periodic boundary conditions
     )
 
     topology = Topology.from_ase(atoms, cutoff=2.0)
@@ -704,7 +702,7 @@ def test_node_post_init():
         node_type="C",
         frac_coord=np.array([0.5, 0.5, 0.5]),
         cart_coord=np.array([1, 1, 1]),
-        is_shifted=True
+        is_shifted=True,
     )
     assert node2.node_type == "C"
     assert node2.is_shifted is True

@@ -92,11 +92,9 @@ def test_min_count_empty():
 def test_uniform_repr_no_stringify():
     """Test uniform_repr with stringify=False."""
 
-    result = uniform_repr(
-        "TestObject", "value", key="test", stringify=False
-    )
+    result = uniform_repr("TestObject", "value", key="test", stringify=False)
     # Without stringify, strings should not be quoted
-    assert result == 'TestObject(value, key=test)'
+    assert result == "TestObject(value, key=test)"
 
 
 def test_uniform_repr_custom_indent():
@@ -110,9 +108,9 @@ def test_uniform_repr_custom_indent():
         indent_size=4,
     )
     # Check that indentation is correct (4 spaces)
-    lines = result.split('\n')
+    lines = result.split("\n")
     if len(lines) > 1:
-        assert lines[1].startswith('    ')
+        assert lines[1].startswith("    ")
 
 
 def test_uniform_repr_newline_in_value():
@@ -124,15 +122,15 @@ def test_uniform_repr_newline_in_value():
         max_width=10,
     )
     # Should trigger multiline mode due to newline
-    assert '\n' in result
-    assert 'TestObject(\n' in result
+    assert "\n" in result
+    assert "TestObject(\n" in result
 
 
 def test_uniform_repr_only_positional():
     """Test uniform_repr with only positional arguments."""
 
     result = uniform_repr("TestObject", 1, 2, 3)
-    assert result == 'TestObject(1, 2, 3)'
+    assert result == "TestObject(1, 2, 3)"
 
 
 def test_uniform_repr_only_keyword():
@@ -146,7 +144,7 @@ def test_uniform_repr_integer_values():
     """Test uniform_repr with integer values (no stringify)."""
 
     result = uniform_repr("TestObject", 1, 2, key=3)
-    assert result == 'TestObject(1, 2, key=3)'
+    assert result == "TestObject(1, 2, key=3)"
 
 
 def test_to_tuple_generator():

@@ -59,7 +59,8 @@ class RingsResults(NamedTuple):
         vertex_symbols_str = ""
 
         vertex_symbols = {
-            x.to_str() for x in get_vertex_symbol(self.clusters)
+            x.to_str()
+            for x in get_vertex_symbol(self.clusters)
             if isinstance(x, VertexSymbol)
         }
 
@@ -108,11 +109,11 @@ class Topology:
     @classmethod
     def from_ase(
         cls,
-        ase_atoms: ase.Atoms, 
+        ase_atoms: ase.Atoms,
         cutoff: float = 0.0,
         pair_cutoffs: dict[tuple[str, str], float] | None = None,
         remove_types: Iterable[Any] | None = None,
-        remove_degree2: bool = False
+        remove_degree2: bool = False,
     ) -> Topology:
         """
         Creates a Topology object from an ASE Atoms object.
@@ -135,10 +136,7 @@ class Topology:
         symbols = ase_atoms.get_chemical_symbols()
 
         edges = graph_edges_by_cutoff(
-            ase_atoms,
-            cutoff=cutoff,
-            pair_cutoffs=pair_cutoffs,
-            one_based=True
+            ase_atoms, cutoff=cutoff, pair_cutoffs=pair_cutoffs, one_based=True
         )
 
         if remove_types is not None or remove_degree2:
@@ -147,11 +145,13 @@ class Topology:
                 symbols,
                 edges,
                 remove_types=remove_types,
-                remove_degree2=remove_degree2
+                remove_degree2=remove_degree2,
             )
-        
+
         nodes = []
-        for idx, (frac,symbol) in enumerate(zip(frac_coords, symbols), start=1):
+        for idx, (frac, symbol) in enumerate(
+            zip(frac_coords, symbols), start=1
+        ):
             nodes.append(Node(node_id=idx, node_type=symbol, frac_coord=frac))
 
         return cls(nodes=nodes, edges=edges, lattice=lattice)
@@ -189,11 +189,8 @@ class Topology:
         ]
 
         return cls(nodes=all_nodes, edges=neighbour_list, lattice=lattice)
-    
-    def get_rings(
-        self,
-        depth: int = 12
-    ) -> list[RingGeometry]:
+
+    def get_rings(self, depth: int = 12) -> list[RingGeometry]:
         """Computes or retrieves unique rings in the network.
 
         Parameters
@@ -203,7 +200,7 @@ class Topology:
 
         Notes
         -----
-        - In the previous implementation, this method returned the clusters of 
+        - In the previous implementation, this method returned the clusters of
           rings at each node. This is obtained instead via the `get_clusters`
           method. This method now returns all unique rings in the network as
           RingGeometry objects.
@@ -222,17 +219,15 @@ class Topology:
         for ring in rings:
             this_ring = []
             for node_id, image in ring:
-                node = self.nodes[node_id-1]
+                node = self.nodes[node_id - 1]
                 node = node.apply_image_shift(self.lattice, image)
                 this_ring.append(node)
             final_rings.append(RingGeometry(tuple(this_ring)))
-        
+
         return final_rings
 
     def get_clusters(
-        self,
-        depth: int = 12,
-        strong: bool = False
+        self, depth: int = 12, strong: bool = False
     ) -> RingsResults:
         """Computes or retrieves ring statistics for the network.
 
@@ -304,11 +299,9 @@ class Topology:
         self.properties["topological_genome"] = topology_genome
 
         return topology_genome
-    
+
     def get_coordination_sequences(
-        self,
-        max_shell: int = 10,
-        node_ids: Iterable[int] | int | None = None
+        self, max_shell: int = 10, node_ids: Iterable[int] | int | None = None
     ) -> npt.NDArray[np.int_]:
         """
         Return coordination sequences for specified nodes.

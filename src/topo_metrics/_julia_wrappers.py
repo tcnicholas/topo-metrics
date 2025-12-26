@@ -47,8 +47,5 @@ def get_all_rings(edges, depth):
 
 def get_coordination_sequences(edges, dmax):
     all_coord_seqs = RS.run_coordination_sequences(edges, dmax)
-    coord_seqs = [
-        [int(t) for t in seq]
-        for seq in all_coord_seqs
-    ]
+    coord_seqs = [[int(t) for t in seq] for seq in all_coord_seqs]
     return np.array(coord_seqs)

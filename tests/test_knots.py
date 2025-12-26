@@ -45,7 +45,7 @@ def ring_example_points():
 
 
 def torus_wave(N=80, R=3.0, r=1.0, k=3):
-    """ Smooth non-planar closed curve (unknot on a torus-like tube). """
+    """Smooth non-planar closed curve (unknot on a torus-like tube)."""
 
     t = np.linspace(0.0, 2.0 * np.pi, N, endpoint=False)
     x = (R + r * np.cos(k * t)) * np.cos(t)
@@ -210,10 +210,8 @@ def test_directional_writhe_triple_positive_and_negative():
     )
 
     def fake_segments(_points, closed=True):
-        A = np.array([[0.0, 0.0, 0.0],
-                      [1.0, 0.0, 0.0]], dtype=float)
-        B = np.array([[0.0, 0.0, 0.0],
-                      [1.0, 0.0, 0.0]], dtype=float)
+        A = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]], dtype=float)
+        B = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]], dtype=float)
         return A, B
 
     def never_adjacent(i, j, m, closed):
@@ -225,6 +223,7 @@ def test_directional_writhe_triple_positive_and_negative():
     # tj = cross2(qp,r)/denom
     # We'll return 1.0 for denom, 0.5 for the other two.
     calls = {"n": 0}
+
     def cross2_stub(a, b):
         calls["n"] += 1
         if calls["n"] == 1:
@@ -237,27 +236,31 @@ def test_directional_writhe_triple_positive_and_negative():
     # So to make it positive, swap S0/S1:
     # cross(S1,S0) with S1=(1,0,0), S0=(0,1,0) => (0,0,1), dot(...,(0,0,1))=+1
     def segments_positive(_points, closed=True):
-        A = np.array([[0.0, 0.0, 0.0],
-                      [0.0, 0.0, 1.0]], dtype=float)
-        S = np.array([[0.0, 1.0, 0.0],   # S[i]
-                      [1.0, 0.0, 0.0]],  # S[j]
-                     dtype=float)
+        A = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=float)
+        S = np.array(
+            [
+                [0.0, 1.0, 0.0],  # S[i]
+                [1.0, 0.0, 0.0],
+            ],  # S[j]
+            dtype=float,
+        )
         B = A + S
         return A, B
 
     # NEGATIVE triple: flip one segment so cross changes sign
     def segments_negative(_points, closed=True):
-        A = np.array([[0.0, 0.0, 0.0],
-                      [0.0, 0.0, 1.0]], dtype=float)
-        S = np.array([[0.0, 1.0, 0.0],
-                      [-1.0, 0.0, 0.0]],  # flipped
-                     dtype=float)
+        A = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=float)
+        S = np.array(
+            [[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]],  # flipped
+            dtype=float,
+        )
         B = A + S
         return A, B
 
     # --- test triple > 0 increments ---
     calls["n"] = 0
     import topo_metrics.knots as km
+
     orig_segments = km._segments
     orig_adj = km._are_adjacent
     orig_cross2 = km._cross2

@@ -15,7 +15,6 @@ if TYPE_CHECKING:  # pragma: no cover
 
 @dataclass(frozen=True)
 class RingSizeCounts:
-
     sizes: npt.NDArray[np.int_]
     counts: npt.NDArray[np.int_]
 
@@ -58,7 +57,6 @@ class RingSizeCounts:
 
 
 class Ring(NamedTuple):
-
     nodes: list[Node]
     """ The node IDs that form the ring. Neighbouring nodes are connected by an 
     edge, and the last node is connected to the first node. """
@@ -72,7 +70,7 @@ class Ring(NamedTuple):
     def size(self) -> int:
         """Ring size."""
         return len(self)
-    
+
     def geometry(self) -> RingGeometry:
         """Get the ring geometry object."""
         return RingGeometry(nodes=tuple(self.nodes))
@@ -172,7 +170,7 @@ def node_list_to_ring(
     """
 
     assert topology.lattice is not None
-    
+
     # the first entry is the central node.
     ordered_node_list = get_ordered_node_list(node_list, central_node_id)
 

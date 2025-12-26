@@ -22,7 +22,6 @@ def make_square_ring_nodes():
 
 
 def test_species_and_len():
-
     nodes, _ = make_square_ring_nodes()
     rg = RingGeometry(nodes=nodes)
 
@@ -35,7 +34,9 @@ def test_radius_of_gyration_square():
     rg = RingGeometry(nodes=nodes)
 
     # unit square corners around centroid: Rg^2 = 0.5 -> Rg = sqrt(0.5)
-    assert rg.radius_of_gyration==pytest.approx(np.sqrt(0.5), rel=0, abs=1e-12)
+    assert rg.radius_of_gyration == pytest.approx(
+        np.sqrt(0.5), rel=0, abs=1e-12
+    )
 
 
 def test_gyration_tensor_square():
@@ -79,7 +80,6 @@ def test_geometric_centroid_square():
 
 
 def test_writhe_and_acn_dispatch(monkeypatch):
-
     import topo_metrics.ring_geometry as rgmod
 
     nodes, coords = make_square_ring_nodes()

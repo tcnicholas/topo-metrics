@@ -57,7 +57,9 @@ def graph_edges_by_cutoff(
         Zmax = Z.max()
 
         global_cutoff = max(cutoff, max(pair_cutoffs.values()))
-        cutoff_matrix = np.full((Zmax+1, Zmax+1), global_cutoff, dtype=float)
+        cutoff_matrix = np.full(
+            (Zmax + 1, Zmax + 1), global_cutoff, dtype=float
+        )
 
         # fill matrix from element-symbol pair dict, symmetrising
         for (sym1, sym2), c in pair_cutoffs.items():
@@ -88,17 +90,18 @@ def graph_edges_by_cutoff(
 
     return edges
 
+
 def autoreduce_neighborlist(
     frac_coords: npt.NDArray[np.float64],
     symbols: list[str],
     edges: npt.NDArray[np.int_],
     remove_types: Iterable[Any] | None = None,
-    remove_degree2: bool = False
+    remove_degree2: bool = False,
 ) -> tuple[
     npt.NDArray[np.float64],
     list[str],
     npt.NDArray[np.int_],
-    npt.NDArray[np.int_]
+    npt.NDArray[np.int_],
 ]:
     """
     Simplify a periodic bonded graph by contracting out selected atoms.
@@ -148,9 +151,8 @@ def autoreduce_neighborlist(
 
     symbols = list(symbols)
     remove_types_set = set(remove_types) if remove_types is not None else set()
-    removable_by_type = np.array([
-        sym in remove_types_set for sym in symbols],
-        dtype=bool
+    removable_by_type = np.array(
+        [sym in remove_types_set for sym in symbols], dtype=bool
     )
 
     degrees = np.array([len(adj) for adj in adjacency], dtype=int)
@@ -173,7 +175,7 @@ def autoreduce_neighborlist(
 
     def add_edge(u, v, S_uv) -> None:
         """Add undirected edge u<->v with shift S_uv from u to v."""
-    
+
         adjacency[u].append((v, S_uv))
         adjacency[v].append((u, -S_uv))
         degrees[u] += 1
@@ -214,9 +216,13 @@ def autoreduce_neighborlist(
 
                 # Newly 2-connected atoms can be scheduled if we are doing
                 # degree-2 reduction and they are not type-protected
-                if (remove_degree2 and not removed[n] and
-                        not removable_by_type[n] and
-                        degrees[n] == 2 and not scheduled[n]):
+                if (
+                    remove_degree2
+                    and not removed[n]
+                    and not removable_by_type[n]
+                    and degrees[n] == 2
+                    and not scheduled[n]
+                ):
                     q.append(n)
                     scheduled[n] = True
 

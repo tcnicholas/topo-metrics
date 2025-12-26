@@ -23,25 +23,24 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class RingGeometry:
-
     nodes: tuple[Node, ...]
     """ The nodes in the ring. """
 
     @property
     def species(self) -> str:
-        """ Species string of the ring. """
+        """Species string of the ring."""
 
         return "".join([str(x.node_type) for x in self.nodes])
 
     @cached_property
     def positions(self) -> npt.NDArray[np.floating]:
-        """ Cartesian positions of the nodes in the ring. """
+        """Cartesian positions of the nodes in the ring."""
 
         return np.asarray([x.cart_coord for x in self.nodes], dtype=float)
 
     @cached_property
     def radius_of_gyration(self) -> float:
-        """ Radius of gyration around the geometric centroid. """
+        """Radius of gyration around the geometric centroid."""
 
         positions = self.positions
         r_cm = positions.mean(axis=0)
@@ -52,8 +51,8 @@ class RingGeometry:
 
     @cached_property
     def gyration_tensor(self) -> npt.NDArray[np.floating]:
-        """Gyration tensor of the ring. 
-        
+        """Gyration tensor of the ring.
+
         The gyration tensor describes the second moments of position of a set of
         points around their center of mass. It is a symmetric 3x3 matrix.
         """
@@ -66,19 +65,19 @@ class RingGeometry:
 
     @cached_property
     def principal_moments(self) -> npt.NDArray[np.floating]:
-        """Principal moments of the gyration tensor. 
-        
+        """Principal moments of the gyration tensor.
+
         The principal moments are the eigenvalues of the gyration tensor, which
         describe the distribution of points along the principal axes.
         """
 
         Q = self.gyration_tensor
-        evals, _ = np.linalg.eigh(Q) 
+        evals, _ = np.linalg.eigh(Q)
         return evals
 
     @cached_property
     def asphericity(self) -> float:
-        """ Asphericity of the ring based on the principal moments. """
+        """Asphericity of the ring based on the principal moments."""
 
         lam = np.asarray(self.principal_moments, dtype=float)
         s1 = lam.sum()
@@ -91,11 +90,9 @@ class RingGeometry:
         return float(1.5 * num / (s1 * s1))
 
     def writhe_and_acn(
-        self, 
-        method: str = "1a",
-        closed=True
-    ) -> tuple[float, float] | float: 
-        """Writhe of the ring using specified method from 
+        self, method: str = "1a", closed=True
+    ) -> tuple[float, float] | float:
+        """Writhe of the ring using specified method from
 
         Parameters
         ----------
@@ -109,7 +106,7 @@ class RingGeometry:
         """
 
         P = self.positions
-    
+
         if method == "1a":
             return writhe_method_1a(P, closed=closed)
         elif method == "1b":
@@ -123,35 +120,32 @@ class RingGeometry:
 
     @property
     def geometric_centroid(self) -> npt.NDArray[np.floating]:
-        """ Geometric centroid of the ring. """
+        """Geometric centroid of the ring."""
 
         return self.positions.mean(axis=0)
 
     def to_xyz(self, filename: Path | str, write_info: bool = False) -> None:
-        """ Write the ring to an xyz file. """
+        """Write the ring to an xyz file."""
 
         filename = Path(filename)
 
         if not filename.parent.exists():
             filename.parent.mkdir(
                 exist_ok=True, parents=True
-            ) # pragma: no cover
+            )  # pragma: no cover
 
         atoms = ase.Atoms(self.species, positions=self.positions)
         atoms.write(filename)
 
     def __len__(self) -> int:
-        """ The number of nodes in the ring. """
+        """The number of nodes in the ring."""
 
         return len(self.nodes)
 
     def __repr__(self) -> str:
-        """ Tidy string representation of the RingGeometry. """
-    
+        """Tidy string representation of the RingGeometry."""
+
         info = {"n": len(self.nodes)}
         return uniform_repr(
-            "RingGeometry",
-            **info,
-            stringify=True,
-            indent_size=4
+            "RingGeometry", **info, stringify=True, indent_size=4
         )
