@@ -41,6 +41,24 @@ Homepage = "https://github.com/tcnicholas/topo-metrics"
 
 [project.optional-dependencies]
 tests = ["pytest", "pytest-cov"]
+docs = [
+    "sphinx",
+    "pip",
+    "furo",
+    "nbsphinx",
+    "ipython",
+    "pyzmq",
+    "sphinx-autoapi",
+    "sphinx-autobuild",
+    "pydata_sphinx_theme",
+    "sphinxext-opengraph",
+    "sphinx-copybutton",
+    "sphinx-design",
+    "jupyter_sphinx",
+    "sphinx-togglebutton",
+    "sphinx_favicon",
+    "sphinx_sitemap",
+]
 dev = ["bumpver", "ruff"]
 publish = ["build", "twine"]
 

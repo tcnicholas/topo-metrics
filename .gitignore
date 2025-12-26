@@ -25,5 +25,5 @@ coverage.xml
 local.ipynb
 .local
 .examples
-docs
+_build
 examples-1.ipynb

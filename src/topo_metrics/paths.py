@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import contextlib
+import os
 from pathlib import Path
+
+os.environ.setdefault("PYTHON_JULIACALL_AUTOLOAD_IPYTHON_EXTENSION", "no")
 
 import juliacall
 
-jl = juliacall.newmodule("Rings")  # avoid polluting the global namespace.
+jl = juliacall.newmodule("Rings")
 
 RingStatistics = None
 
