@@ -197,7 +197,8 @@ def test_directional_writhe_triple_positive_and_negative():
     # and monkeypatch _cross2 so denom != 0 and ti,tj fall in (0,1).
     #
     # Then choose A/S so that:
-    # triple = dot(cross(S[j], S[i]), (A[j]-A[i])) is >0 in one test and <0 in the other.
+    # triple = dot(cross(S[j], S[i]), (A[j]-A[i])) is >0 in one test and <0 in
+    # another test.
 
     points = np.array(
         [
