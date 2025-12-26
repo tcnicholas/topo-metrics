@@ -288,3 +288,142 @@ def test_directional_writhe_triple_positive_and_negative():
         km._segments = orig_segments
         km._are_adjacent = orig_adj
         km._cross2 = orig_cross2
+
+
+def test_unit_returns_none_for_zero_vector():
+    v = np.array([0.0, 0.0, 0.0], dtype=float)
+    assert k._unit(v, eps=1e-12) is None
+
+
+def test_clean_writhe_thresholding():
+    # small wr cleaned to 0
+    assert k._clean_writhe(1e-20, acn=1.0, atol=1e-12) == 0.0
+    # large wr not cleaned
+    assert k._clean_writhe(1e-6, acn=0.0, atol=1e-12) == pytest.approx(1e-6)
+
+
+def test_gauss_pair_method_1a_degenerate_normals_returns_zero():
+    # Collinear points -> cross products vanish -> n? == None -> returns (0,0)
+    p1 = np.array([0.0, 0.0, 0.0])
+    p2 = np.array([1.0, 0.0, 0.0])
+    p3 = np.array([2.0, 0.0, 0.0])
+    p4 = np.array([3.0, 0.0, 0.0])
+
+    V, Vabs = k._gauss_pair_method_1a(p1, p2, p3, p4)
+    assert V == 0.0
+    assert Vabs == 0.0
+
+
+def test_gauss_pair_method_1a_triple_zero_signed_zero_but_abs_positive():
+    # Constructed so scalar triple product == 0 but normals are defined.
+    # This covers the `sgn = ... else 0.0` path in 1a.
+    p1 = np.array([0.0, 0.0, 0.0])
+    p2 = np.array([0.0, 1.0, 1.0])
+    p3 = np.array([0.0, 0.0, 1.0])
+    p4 = np.array([0.0, 1.0, 0.0])
+
+    V, Vabs = k._gauss_pair_method_1a(p1, p2, p3, p4)
+    assert V == 0.0
+    assert Vabs > 0.0
+
+
+def test_gauss_pair_method_1b_zero_length_segment_returns_zero():
+    p1 = np.array([0.0, 0.0, 0.0])
+    p2 = np.array([0.0, 0.0, 0.0])  # zero-length
+    p3 = np.array([0.0, 1.0, 0.0])
+    p4 = np.array([1.0, 1.0, 0.0])
+
+    V, Vabs = k._gauss_pair_method_1b(p1, p2, p3, p4)
+    assert V == 0.0
+    assert Vabs == 0.0
+
+
+def test_gauss_pair_method_1b_parallel_segments_returns_zero():
+    # s1 and s2 parallel => sin^2(beta) ~ 0 -> returns (0,0)
+    p1 = np.array([0.0, 0.0, 0.0])
+    p2 = np.array([1.0, 0.0, 0.0])
+    p3 = np.array([0.0, 1.0, 0.0])
+    p4 = np.array([1.0, 1.0, 0.0])
+
+    V, Vabs = k._gauss_pair_method_1b(p1, p2, p3, p4)
+    assert V == 0.0
+    assert Vabs == 0.0
+
+
+def test_gauss_pair_method_1b_a0_zero_returns_zero():
+    # Make e1 and e2 non-parallel, but r12 lies in their span => a0 = 0 => 
+    # returns (0,0).
+    p1 = np.array([0.0, 0.0, 0.0])
+    p2 = np.array([1.0, 0.0, 0.0])  # e1 along x
+    p3 = np.array([0.0, 0.0, 0.0])  # r12 = 0 => a0 = 0
+    p4 = np.array([0.0, 1.0, 0.0])  # e2 along y (non-parallel)
+
+    V, Vabs = k._gauss_pair_method_1b(p1, p2, p3, p4)
+    assert V == 0.0
+    assert Vabs == 0.0
+
+
+def test_method2a_nan_when_consecutive_segments_collinear():
+    # S[0] and S[1] collinear => cross(S[i-1],S[i]) can be zero => _unit(None) 
+    # => nan
+    P = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [2.0, 0.0, 0.0],  # collinear step
+            [2.0, 1.0, 0.0],
+        ],
+        dtype=float,
+    )
+    assert np.isnan(k.writhe_method_2a(P))
+
+
+def test_method2b_nan_when_consecutive_segments_collinear_in_p_i():
+    # Same idea, but exercises the p_i computation in method 2b.
+    P = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [2.0, 0.0, 0.0],  # collinear step
+            [2.0, 1.0, 0.0],
+        ],
+        dtype=float,
+    )
+    assert np.isnan(k.writhe_method_2b(P))
+
+
+def test_all_methods_two_points_return_zero():
+    P = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 2.0, 3.0],
+        ],
+        dtype=float,
+    )
+
+    wr1a, acn1a = writhe_method_1a(P, closed=False)
+    wr1b, acn1b = writhe_method_1b(P, closed=False)
+    wr2a = writhe_method_2a(P)
+    wr2b = writhe_method_2b(P)
+
+    assert wr1a == 0.0 and acn1a == 0.0
+    assert wr1b == 0.0 and acn1b == 0.0
+    assert wr2a == 0.0
+    assert wr2b == 0.0
+
+
+def test_directional_writhe_triple_zero_hits_elif_false_arc():
+    # Planar bow-tie: segments 0 and 2 cross in xy, but triple == 0 (purely planar)
+    P = np.array(
+        [
+            [0.0, 0.0, 0.0],  # P0
+            [1.0, 1.0, 0.0],  # P1   seg0: P0->P1 (diag)
+            [0.0, 1.0, 0.0],  # P2
+            [1.0, 0.0, 0.0],  # P3   seg2: P2->P3 (other diag)
+        ],
+        dtype=float,
+    )
+
+    # triple == 0 => neither +1 nor -1, so Wrz stays 0,
+    # but the `elif triple < 0` condition is still evaluated (false) and loops.
+    assert k._directional_writhe_Wrz(P) == pytest.approx(0.0, abs=1e-12)

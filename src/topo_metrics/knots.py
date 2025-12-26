@@ -8,8 +8,10 @@ import numpy.typing as npt
 Array = npt.NDArray[np.floating]
 
 
-def _drop_duplicate_endpoint(P: Array) -> Array:
-    """Drop duplicate last point if it matches the first."""
+def _drop_duplicate_endpoint(
+    P: Array
+) -> Array:
+    """ Drop duplicate last point if it matches the first. """
 
     if len(P) >= 2 and np.allclose(P[0], P[-1]):
         return P[:-1]
@@ -18,7 +20,7 @@ def _drop_duplicate_endpoint(P: Array) -> Array:
 
 
 def _as_points(points: npt.ArrayLike) -> Array:
-    """Convert input to (N,3) array of points."""
+    """ Convert input to (N,3) array of points. """
 
     P = np.asarray(points, dtype=float)
 
@@ -31,7 +33,7 @@ def _as_points(points: npt.ArrayLike) -> Array:
 
 
 def _segments(points: Array, closed: bool) -> tuple[Array, Array]:
-    """Returns (A, B) where each segment is A[i] -> B[i]."""
+    """ Returns (A, B) where each segment is A[i] -> B[i]. """
 
     if closed:
         A = points
@@ -46,7 +48,7 @@ def _segments(points: Array, closed: bool) -> tuple[Array, Array]:
 
 
 def _are_adjacent(i: int, j: int, m: int, closed: bool) -> bool:
-    """Are segments i and j adjacent (share a vertex)?"""
+    """ Are segments i and j adjacent (share a vertex)? """
 
     if i == j:
         return True
@@ -57,7 +59,7 @@ def _are_adjacent(i: int, j: int, m: int, closed: bool) -> bool:
 
 
 def _unit(v: Array, eps: float) -> Array | None:
-    """Return unit vector or None if zero norm."""
+    """ Return unit vector or None if zero norm. """
 
     n = float(np.linalg.norm(v))
     if n < eps:
@@ -67,7 +69,7 @@ def _unit(v: Array, eps: float) -> Array | None:
 
 
 def _cross2(a: Array, b: Array) -> float:
-    """2D cross product (scalar)."""
+    """ 2D cross product (scalar). """
 
     return float(a[0] * b[1] - a[1] * b[0])
 
@@ -114,14 +116,18 @@ def _directional_writhe_Wrz(points: Array, *, eps: float = 1e-12) -> float:
 
 
 def _clean_writhe(wr: float, acn: float, atol: float = 1e-12) -> float:
-    """Clean writhe value based on average crossing number."""
+    """ Clean writhe value based on average crossing number. """
 
     tol = max(atol, 1e-12 * max(1.0, acn))
     return 0.0 if abs(wr) < tol else wr
 
 
 def _gauss_pair_method_1a(
-    p1: Array, p2: Array, p3: Array, p4: Array, eps: float = 1e-12
+    p1: Array,
+    p2: Array,
+    p3: Array,
+    p4: Array,
+    eps: float = 1e-12
 ) -> tuple[float, float]:
     """
     Method 1a: solid-angle / spherical quadrilateral.
@@ -161,7 +167,11 @@ def _gauss_pair_method_1a(
 
 
 def _gauss_pair_method_1b(
-    p1: Array, p2: Array, p3: Array, p4: Array, eps: float = 1e-12
+    p1: Array,
+    p2: Array,
+    p3: Array,
+    p4: Array,
+    eps: float = 1e-12
 ) -> tuple[float, float]:
     """
     Method 1b: analytic evaluation of the Gauss integral.
@@ -169,11 +179,11 @@ def _gauss_pair_method_1b(
     """
 
     def F(t1: float, t2: float) -> float:
-        rad = t1 * t1 + t2 * t2 - 2.0 * t1 * t2 * cosb + a0 * a0 * sin2b
-        if rad <= 0.0:
+        rad = t1*t1 + t2*t2 - 2.0*t1*t2*cosb + a0*a0*sin2b
+        if rad <= 0.0: # pragma: no cover
             return 0.0
         denom = a0 * math.sqrt(rad)
-        num = t1 * t2 + a0 * a0 * cosb
+        num = t1*t2 + a0*a0*cosb
         # Eq (25): -(1/4π) * arctan( num / denom )
         return -(1.0 / (4.0 * math.pi)) * math.atan(num / denom)
 
@@ -202,7 +212,10 @@ def _gauss_pair_method_1b(
         return 0.0, 0.0
 
     V_over_4pi = (
-        F(a1 + l1, a2 + l2) - F(a1 + l1, a2) - F(a1, a2 + l2) + F(a1, a2)
+        F(a1 + l1, a2 + l2)
+        - F(a1 + l1, a2)
+        - F(a1, a2 + l2)
+        + F(a1, a2)
     )
 
     V = 4.0 * math.pi * V_over_4pi
@@ -210,7 +223,10 @@ def _gauss_pair_method_1b(
 
 
 def writhe_method_1a(
-    points: npt.ArrayLike, *, closed: bool = True, eps: float = 1e-12
+    points: npt.ArrayLike,
+    *, 
+    closed: bool = True,
+    eps: float = 1e-12
 ) -> tuple[float, float]:
     """
     Method 1a: pairwise solid angles (Eqs 13, 15-16).
@@ -242,7 +258,10 @@ def writhe_method_1a(
 
 
 def writhe_method_1b(
-    points: npt.ArrayLike, *, closed: bool = True, eps: float = 1e-12
+    points: npt.ArrayLike,
+    *,
+    closed: bool = True,
+    eps: float = 1e-12
 ) -> tuple[float, float]:
     """
     Method 1b: analytic Gauss integral (Eqs 13, 24-25).
@@ -318,7 +337,7 @@ def writhe_method_2a(points: npt.ArrayLike, *, eps: float = 1e-12) -> float:
 
 def writhe_method_2b(points: npt.ArrayLike, *, eps: float = 1e-12) -> float:
     """
-    Method 2b (le Bret-style):
+    Method 2b (le Bret-style): 
         Wr = Wrz - Tw with a_i = k×s_i/|k×s_i| (Eqs 35-38), k = z-axis.
     Requires CLOSED chain.
     """
