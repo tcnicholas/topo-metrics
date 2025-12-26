@@ -351,7 +351,7 @@ def test_gauss_pair_method_1b_parallel_segments_returns_zero():
 
 
 def test_gauss_pair_method_1b_a0_zero_returns_zero():
-    # Make e1 and e2 non-parallel, but r12 lies in their span => a0 = 0 => 
+    # Make e1 and e2 non-parallel, but r12 lies in their span => a0 = 0 =>
     # returns (0,0).
     p1 = np.array([0.0, 0.0, 0.0])
     p2 = np.array([1.0, 0.0, 0.0])  # e1 along x
@@ -364,7 +364,7 @@ def test_gauss_pair_method_1b_a0_zero_returns_zero():
 
 
 def test_method2a_nan_when_consecutive_segments_collinear():
-    # S[0] and S[1] collinear => cross(S[i-1],S[i]) can be zero => _unit(None) 
+    # S[0] and S[1] collinear => cross(S[i-1],S[i]) can be zero => _unit(None)
     # => nan
     P = np.array(
         [
