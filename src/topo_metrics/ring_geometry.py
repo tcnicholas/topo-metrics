@@ -18,7 +18,7 @@ from topo_metrics.knots import (
 from topo_metrics.utils import uniform_repr
 
 if TYPE_CHECKING:
-    from topo_metrics.topology import Node
+    from topo_metrics.topology import Node  # pragma: no cover
 
 
 @dataclass(frozen=True)
@@ -133,7 +133,9 @@ class RingGeometry:
         filename = Path(filename)
 
         if not filename.parent.exists():
-            filename.parent.mkdir(exist_ok=True, parents=True)
+            filename.parent.mkdir(
+                exist_ok=True, parents=True
+            ) # pragma: no cover
 
         atoms = ase.Atoms(self.species, positions=self.positions)
         atoms.write(filename)
