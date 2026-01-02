@@ -92,15 +92,15 @@ def graph_edges_by_cutoff(
 
 
 def autoreduce_neighborlist(
-    cart_coords: npt.NDArray[np.float64],
+    cart_coords: npt.NDArray[np.float64] | list[None],
     frac_coords: npt.NDArray[np.float64] | list[None],
     symbols: list[str],
     edges: npt.NDArray[np.int_],
     remove_types: Iterable[Any] | None = None,
     remove_degree2: bool = False,
 ) -> tuple[
-    npt.NDArray[np.float64],
-    npt.NDArray[np.float64],
+    npt.NDArray[np.float64] | list[None],
+    npt.NDArray[np.float64] | list[None],
     list[str],
     npt.NDArray[np.int_],
     npt.NDArray[np.int_],
@@ -138,7 +138,7 @@ def autoreduce_neighborlist(
     cart_coords = np.asarray(cart_coords)
     frac_coords = np.asarray(frac_coords)
     edges = np.asarray(edges, dtype=int)
-    N = cart_coords.shape[0]
+    N = len(symbols)
 
     # 0-based indices for manipulation
     i0 = edges[:, 0] - 1

@@ -15,6 +15,7 @@ def test_autoreduce_neighborlist_remove_by_type():
             [1.0, 0.0, 0.0],  # Si
         ]
     )
+    cart_coords = [None, None, None]
     symbols = ["Si", "O", "Si"]
 
     # Edges (1-based): Si-O, O-Si with no shifts
@@ -27,8 +28,8 @@ def test_autoreduce_neighborlist_remove_by_type():
     )
 
     # Remove oxygen atoms
-    new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
-        frac_coords, symbols, edges, remove_types={"O"}
+    _, _, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
+        cart_coords, frac_coords, symbols, edges, remove_types={"O"}
     )
 
     # Should have 2 Si atoms left
@@ -57,6 +58,7 @@ def test_autoreduce_neighborlist_degree2():
             [1.0, 0.0, 0.0],  # C
         ]
     )
+    cart_coords = [None, None, None]
     symbols = ["A", "B", "C"]
 
     edges = np.array(
@@ -67,8 +69,8 @@ def test_autoreduce_neighborlist_degree2():
         dtype=int,
     )
 
-    new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
-        frac_coords, symbols, edges, remove_degree2=True
+    _, _, new_symbols, new_edges, _ = autoreduce_neighborlist(
+        cart_coords, frac_coords, symbols, edges, remove_types={"O"}
     )
 
     # B should be removed
@@ -89,6 +91,7 @@ def test_autoreduce_neighborlist_periodic():
             [0.9, 0.0, 0.0],  # Si
         ]
     )
+    cart_coords = [None, None, None]
     symbols = ["Si", "O", "Si"]
 
     # Edge with shift vector
@@ -100,8 +103,8 @@ def test_autoreduce_neighborlist_periodic():
         dtype=int,
     )
 
-    new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
-        frac_coords, symbols, edges, remove_types={"O"}
+    _, _, _, new_edges, _ = autoreduce_neighborlist(
+        cart_coords, frac_coords, symbols, edges, remove_types={"O"}
     )
 
     # Check shift is preserved
@@ -120,10 +123,12 @@ def test_autoreduce_neighborlist_empty_removals():
             [0.5, 0.5, 0.5],
         ]
     )
+    cart_coords = [None, None]
     symbols = ["A", "B"]
     edges = np.array([[1, 2, 0, 0, 0]], dtype=int)
 
-    new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
+    _, _, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
+        cart_coords,
         frac_coords,
         symbols,
         edges,
@@ -149,6 +154,7 @@ def test_autoreduce_neighborlist_triangle():
             [1.0, 0.0, 0.0],  # C
         ]
     )
+    cart_coords = [None, None, None]
     symbols = ["A", "B", "C"]
 
     edges = np.array(
@@ -159,9 +165,10 @@ def test_autoreduce_neighborlist_triangle():
         dtype=int,
     )
 
-    new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
-        frac_coords, symbols, edges, remove_types={"B"}
+    _, _, new_symbols, new_edges, _ = autoreduce_neighborlist(
+        cart_coords, frac_coords, symbols, edges, remove_types={"A"}
     )
+
 
     # A and C remain, with direct edge
     assert len(new_symbols) == 2
@@ -178,11 +185,12 @@ def test_autoreduce_neighborlist_no_edges():
             [0.5, 0.5, 0.5],
         ]
     )
+    cart_coords = [None, None]
     symbols = ["A", "B"]
     edges = np.array([], dtype=int).reshape(0, 5)
 
-    new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
-        frac_coords, symbols, edges, remove_types={"A"}
+    _, _, new_symbols, new_edges, _ = autoreduce_neighborlist(
+        cart_coords, frac_coords, symbols, edges, remove_types={"A"}
     )
 
     # Isolated atoms (with no edges) are not removed by type
@@ -204,6 +212,7 @@ def test_autoreduce_neighborlist_complex_shifts():
             [1.5, 0.0, 0.0],  # D
         ]
     )
+    cart_coords = [None] * 4
     symbols = ["A", "B", "C", "D"]
 
     edges = np.array(
@@ -215,8 +224,8 @@ def test_autoreduce_neighborlist_complex_shifts():
         dtype=int,
     )
 
-    new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
-        frac_coords, symbols, edges, remove_types={"B", "C"}
+    _, _, new_symbols, new_edges, _ = autoreduce_neighborlist(
+        cart_coords, frac_coords, symbols, edges, remove_types={"B", "C"}
     )
 
     # Only A and D remain
@@ -239,6 +248,7 @@ def test_autoreduce_neighborlist_self_loop_prevention():
             [0.5, 0.5, 0.5],  # B
         ]
     )
+    cart_coords = [None] * 4
     symbols = ["B", "B"]
 
     edges = np.array(
@@ -248,8 +258,8 @@ def test_autoreduce_neighborlist_self_loop_prevention():
         dtype=int,
     )
 
-    new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
-        frac_coords, symbols, edges, remove_types={"B"}
+    _, _, new_symbols, new_edges, _ = autoreduce_neighborlist(
+        cart_coords, frac_coords, symbols, edges, remove_types={"B"}
     )
 
     # All atoms removed
@@ -270,6 +280,7 @@ def test_autoreduce_neighborlist_degree2_chain():
             [0.8, 0.0, 0.0],  # E
         ]
     )
+    cart_coords = [None] * 4
     symbols = ["A", "B", "C", "D", "E"]
 
     edges = np.array(
@@ -282,8 +293,8 @@ def test_autoreduce_neighborlist_degree2_chain():
         dtype=int,
     )
 
-    new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
-        frac_coords, symbols, edges, remove_degree2=True
+    _, _, new_symbols, new_edges, _ = autoreduce_neighborlist(
+        cart_coords, frac_coords, symbols, edges, remove_degree2=True
     )
 
     # Only A and E should remain
@@ -306,6 +317,7 @@ def test_autoreduce_neighborlist_combined_removal():
             [0.9, 0.0, 0.0],  # D
         ]
     )
+    cart_coords = [None] * 4
     symbols = ["A", "O", "C", "D"]
 
     edges = np.array(
@@ -317,7 +329,8 @@ def test_autoreduce_neighborlist_combined_removal():
         dtype=int,
     )
 
-    new_coords, new_symbols, new_edges, old_to_new = autoreduce_neighborlist(
+    _, _, new_symbols, _, _ = autoreduce_neighborlist(
+        cart_coords,
         frac_coords,
         symbols,
         edges,
