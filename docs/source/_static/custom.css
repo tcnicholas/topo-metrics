@@ -43,3 +43,8 @@ h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
 .navbar a {
   color: #13979F;
 }
+
+div.rendered_html h1 { font-size: 2.0rem; }
+div.rendered_html h2 { font-size: 1.6rem; }
+div.rendered_html h3 { font-size: 1.3rem; }
+div.rendered_html h4 { font-size: 1.1rem; }
