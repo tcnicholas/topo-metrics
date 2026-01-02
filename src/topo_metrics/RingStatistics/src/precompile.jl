@@ -56,6 +56,11 @@ using .RingStatistics
     cell_lengths = (8.965, 8.965, 8.965)
     cell_angles = (90.0, 90.0, 90.0)
 
+    # small random input for knots.
+    A = randn(12, 3)     # N×3
+    B = randn(14, 3)     # N×3
+    cell = Matrix{Float64}(I, 3, 3)
+
     @compile_workload begin
         
         RingStatistics.run_rings(edges_list)
@@ -69,6 +74,23 @@ using .RingStatistics
             cell_angles
         )
 
+        RingStatistics.run_bond_distance_rdf(
+            positions,
+            edges_list,
+            collect(cell_lengths),
+            collect(cell_angles);
+            dmax=8,
+            rmax=10.0,
+            dr=0.02,
+            normalise=true
+        )
+
+        RingStatistics.Knots.linking_number_pbc_1a(
+            A, B, cell; n_images=1
+        )
+        RingStatistics.Knots.linking_number_pbc_1a(
+            A, B, cell; n_images=2
+        )
     end
 
 end

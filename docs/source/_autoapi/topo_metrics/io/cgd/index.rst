@@ -16,7 +16,7 @@ Functions
 Module Contents
 ---------------
 
-.. py:function:: parse_cgd(filename: str) -> tuple[pymatgen.core.lattice.Lattice, list[str], numpy.typing.NDArray[numpy.floating], list[list[Any]]]
+.. py:function:: parse_cgd(filename: pathlib.Path | str) -> tuple[pymatgen.core.lattice.Lattice, list[str], numpy.typing.NDArray[numpy.floating] | None, list[list[Any]]]
 
    Parses a CGD file and extracts lattice, atoms, and edges.
 

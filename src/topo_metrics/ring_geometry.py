@@ -10,6 +10,8 @@ import numpy as np
 import numpy.typing as npt
 
 from topo_metrics.knots import (
+    linking_number_pbc,
+    lk_round,
     writhe_method_1a,
     writhe_method_1b,
     writhe_method_2a,
@@ -89,6 +91,12 @@ class RingGeometry:
         num = s2 - (s1 * s1) / 3.0
         return float(1.5 * num / (s1 * s1))
 
+    @property
+    def geometric_centroid(self) -> npt.NDArray[np.floating]:
+        """Geometric centroid of the ring."""
+
+        return self.positions.mean(axis=0)
+
     def writhe_and_acn(
         self, method: str = "1a", closed=True
     ) -> tuple[float, float] | float:
@@ -118,11 +126,69 @@ class RingGeometry:
         else:
             raise ValueError(f"Unknown writhe method: {method}")
 
-    @property
-    def geometric_centroid(self) -> npt.NDArray[np.floating]:
-        """Geometric centroid of the ring."""
+    def linking_number(
+        self,
+        other: RingGeometry,
+        *,
+        cell: npt.ArrayLike,
+        pbc: tuple[bool, bool, bool] = (True, True, True),
+        n_images: int = 1,
+        method: str = "1a",
+        eps: float = 1e-12,
+        check_top_k: int | None = None,
+        disjoint_tol: float | None = 0.05,
+        disjoint_rel: float = 1e-3,
+    ) -> tuple[float, tuple[int, int, int]]:
+        """Linking number between this ring and another ring."""
 
-        return self.positions.mean(axis=0)
+        return linking_number_pbc(
+            self.positions,
+            other.positions,
+            cell=np.asarray(cell, float),
+            pbc=pbc,
+            n_images=n_images,
+            method=method,
+            eps=eps,
+            check_top_k=check_top_k,
+            disjoint_tol=disjoint_tol,
+            disjoint_rel=disjoint_rel,
+        )
+
+    def is_linked_to(
+        self,
+        other: RingGeometry,
+        *,
+        cell: npt.ArrayLike,
+        pbc: tuple[bool, bool, bool] = (True, True, True),
+        n_images: int = 1,
+        method: str = "1a",
+        eps: float = 1e-12,
+        tol: float = 1e-6,
+        check_top_k: int | None = None,
+        disjoint_tol: float | None = None,
+        disjoint_rel: float = 1e-3,
+    ) -> bool:
+        """Determine if this ring is linked to another ring."""
+
+        lk, _ = self.linking_number(
+            other,
+            cell=cell,
+            pbc=pbc,
+            n_images=n_images,
+            method=method,
+            eps=eps,
+            check_top_k=check_top_k,
+            disjoint_tol=disjoint_tol,
+            disjoint_rel=disjoint_rel,
+        )
+
+        if not np.isfinite(lk):
+            return False
+
+        lk_int, ok = lk_round(lk, tol=tol)
+        linked = bool(ok and abs(lk_int) > 0)
+
+        return linked
 
     def to_xyz(self, filename: Path | str, write_info: bool = False) -> None:
         """Write the ring to an xyz file."""

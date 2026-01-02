@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Hashable, Iterable, NamedTuple
 
 import ase
@@ -23,6 +24,7 @@ from topo_metrics.clusters import (
     get_vertex_symbol,
 )
 from topo_metrics.io.cgd import parse_cgd, process_neighbour_list
+from topo_metrics.io.conflink import parse_conflink
 from topo_metrics.neighbours import (
     autoreduce_neighborlist,
     graph_edges_by_cutoff,
@@ -129,10 +131,14 @@ class Topology:
         """
 
         lattice = None
+        cart_coords = None
+        frac_coords = [None] * len(ase_atoms)
+
         if all(ase_atoms.pbc):
             lattice = PymatgenLattice(ase_atoms.cell)
+            frac_coords = ase_atoms.get_scaled_positions()
 
-        frac_coords = ase_atoms.get_scaled_positions()
+        cart_coords = ase_atoms.get_positions()
         symbols = ase_atoms.get_chemical_symbols()
 
         edges = graph_edges_by_cutoff(
@@ -140,24 +146,33 @@ class Topology:
         )
 
         if remove_types is not None or remove_degree2:
-            frac_coords, symbols, edges, _ = autoreduce_neighborlist(
-                frac_coords,
-                symbols,
-                edges,
+            _reduced = autoreduce_neighborlist(
+                cart_coords=cart_coords,
+                frac_coords=frac_coords,
+                symbols=symbols,
+                edges=edges,
                 remove_types=remove_types,
                 remove_degree2=remove_degree2,
             )
+            cart_coords, frac_coords, symbols, edges, _ = _reduced
 
         nodes = []
-        for idx, (frac, symbol) in enumerate(
-            zip(frac_coords, symbols), start=1
+        for idx, (xc, xs, symbol) in enumerate(
+            zip(cart_coords, frac_coords, symbols), start=1
         ):
-            nodes.append(Node(node_id=idx, node_type=symbol, frac_coord=frac))
+            nodes.append(
+                Node(
+                    node_id=idx,
+                    node_type=symbol,
+                    cart_coord=xc,
+                    frac_coord=xs,
+                )
+            )
 
         return cls(nodes=nodes, edges=edges, lattice=lattice)
 
     @classmethod
-    def from_cgd(cls, filename: str) -> Topology:
+    def from_cgd(cls, filename: Path | str) -> Topology:
         """
         Parses and loads a CGD file with an adjacency matrix.
 
@@ -189,6 +204,54 @@ class Topology:
         ]
 
         return cls(nodes=all_nodes, edges=neighbour_list, lattice=lattice)
+
+    @classmethod
+    def from_conflink(
+        cls,
+        filename: str,
+        node_type: str = "Si",
+        index: int | None = None,
+    ) -> Topology:
+        """
+        Parses and loads a conflink file.
+
+        Parameters
+        ----------
+        filename
+            The path to the conflink file.
+        node_type
+            The type to assign to all nodes in the topology.
+
+        Returns
+        -------
+        A Topology object representing the network as nodes and edges.
+        """
+
+        configs = parse_conflink(filename)
+        if not configs:
+            raise ValueError(f"No configurations found in '{filename}'.")
+
+        index = -1 if index is None else index
+
+        components = configs[index].to_nodes_edges_lattice(node_type=node_type)
+
+        nodes = [
+            Node(
+                node_id=atom_id + 1,
+                node_type=node_type,
+                cart_coord=xc,
+                frac_coord=xs,
+            )
+            for atom_id, (xc, xs) in enumerate(
+                zip(components["cart_coords"], components["frac_coords"])
+            )
+        ]
+
+        return cls(
+            nodes=nodes,
+            edges=components["edges"],
+            lattice=components["lattice"],
+        )
 
     def get_rings(self, depth: int = 12) -> list[RingGeometry]:
         """Computes or retrieves unique rings in the network.
@@ -324,6 +387,20 @@ class Topology:
             node_ids = [node_ids]
 
         return cs[np.array(node_ids, dtype=int) - 1]
+
+    @property
+    def cartesian_coordinates(self) -> npt.NDArray[np.floating]:
+        """Return the Cartesian positions of all nodes in the network."""
+        return np.array(
+            [node.cart_coord for node in self.nodes], dtype=np.float64
+        )
+
+    @property
+    def fractional_coordinates(self) -> npt.NDArray[np.floating]:
+        """Return the fractional positions of all nodes in the network."""
+        return np.array(
+            [node.frac_coord for node in self.nodes], dtype=np.float64
+        )
 
     def __getitem__(self, node_id: int) -> Node:
         """Retrieve a Node object by its node number."""

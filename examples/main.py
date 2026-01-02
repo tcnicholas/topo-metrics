@@ -22,7 +22,7 @@ def main(struct_name: str):
         print("It has topology code:\n\n", topology_code.strip(), end="\n\n")
 
     # check rings.
-    rings = topology.get_rings(depth=6)
+    rings = topology.get_clusters(depth=6)
     print("This the summary of the rings analysis:\n\n", rings, end="\n\n")
 
     # print the ring sizes.

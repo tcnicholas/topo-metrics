@@ -71,6 +71,13 @@ Module Contents
       Asphericity of the ring based on the principal moments.
 
 
+   .. py:property:: geometric_centroid
+      :type: numpy.typing.NDArray[numpy.floating]
+
+
+      Geometric centroid of the ring.
+
+
    .. py:method:: writhe_and_acn(method: str = '1a', closed=True) -> tuple[float, float] | float
 
       Writhe of the ring using specified method from
@@ -82,11 +89,16 @@ Module Contents
 
 
 
-   .. py:property:: geometric_centroid
-      :type: numpy.typing.NDArray[numpy.floating]
+   .. py:method:: linking_number(other: RingGeometry, *, cell: numpy.typing.ArrayLike, pbc: tuple[bool, bool, bool] = (True, True, True), n_images: int = 1, method: str = '1a', eps: float = 1e-12, check_top_k: int | None = None, disjoint_tol: float | None = 0.05, disjoint_rel: float = 0.001) -> tuple[float, tuple[int, int, int]]
+
+      Linking number between this ring and another ring.
 
 
-      Geometric centroid of the ring.
+
+   .. py:method:: is_linked_to(other: RingGeometry, *, cell: numpy.typing.ArrayLike, pbc: tuple[bool, bool, bool] = (True, True, True), n_images: int = 1, method: str = '1a', eps: float = 1e-12, tol: float = 1e-06, check_top_k: int | None = None, disjoint_tol: float | None = None, disjoint_rel: float = 0.001) -> bool
+
+      Determine if this ring is linked to another ring.
+
 
 
    .. py:method:: to_xyz(filename: pathlib.Path | str, write_info: bool = False) -> None

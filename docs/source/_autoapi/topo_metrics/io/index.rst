@@ -11,5 +11,7 @@ Submodules
    :maxdepth: 1
 
    /_autoapi/topo_metrics/io/cgd/index
+   /_autoapi/topo_metrics/io/conflink/index
+   /_autoapi/topo_metrics/io/lmp/index
 
 

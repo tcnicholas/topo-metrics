@@ -9,3 +9,4 @@ starting point rather than a complete workflow.
    :maxdepth: 1
 
    Quickstart <quickstart>
+   Entangled Networks <entangled_networks>

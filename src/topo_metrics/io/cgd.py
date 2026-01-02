@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -9,9 +10,9 @@ from pymatgen.core.lattice import Lattice as PymatgenLattice
 
 
 def parse_cgd(
-    filename: str,
+    filename: Path | str,
 ) -> tuple[
-    PymatgenLattice, list[str], npt.NDArray[np.floating], list[list[Any]]
+    PymatgenLattice, list[str], npt.NDArray[np.floating] | None, list[list[Any]]
 ]:
     """
     Parses a CGD file and extracts lattice, atoms, and edges.
@@ -58,6 +59,8 @@ def parse_cgd(
                     edges.append([tokens[1]] + list(map(float, tokens[2:5])))
 
     all_coords = np.array(all_coords) if all_coords else None
+
+    assert lattice is not None, "Lattice information missing in CGD file."
     lattice = PymatgenLattice.from_parameters(*lattice)
 
     return lattice, atom_labels, all_coords, edges

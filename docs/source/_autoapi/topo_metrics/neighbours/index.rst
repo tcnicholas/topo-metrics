@@ -35,7 +35,7 @@ Module Contents
    :rtype: edges
 
 
-.. py:function:: autoreduce_neighborlist(frac_coords: numpy.typing.NDArray[numpy.float64], symbols: list[str], edges: numpy.typing.NDArray[numpy.int_], remove_types: Iterable[Any] | None = None, remove_degree2: bool = False) -> tuple[numpy.typing.NDArray[numpy.float64], list[str], numpy.typing.NDArray[numpy.int_], numpy.typing.NDArray[numpy.int_]]
+.. py:function:: autoreduce_neighborlist(cart_coords: numpy.typing.NDArray[numpy.float64], frac_coords: numpy.typing.NDArray[numpy.float64] | list[None], symbols: list[str], edges: numpy.typing.NDArray[numpy.int_], remove_types: Iterable[Any] | None = None, remove_degree2: bool = False) -> tuple[numpy.typing.NDArray[numpy.float64], numpy.typing.NDArray[numpy.float64], list[str], numpy.typing.NDArray[numpy.int_], numpy.typing.NDArray[numpy.int_]]
 
    Simplify a periodic bonded graph by contracting out selected atoms.
 

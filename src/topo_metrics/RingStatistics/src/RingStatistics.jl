@@ -1,12 +1,18 @@
 module RingStatistics
 
     using Graphs, PeriodicGraphs, PeriodicGraphEmbeddings, CrystalNets
+    using LinearAlgebra, StaticArrays, Base.Threads
+
+    include("Knots.jl")
+    using .Knots
+    export Knots
 
     export greet
     export run_bfgs
     export get_topology
     export run_rings, run_strong_rings
     export run_coordination_sequences
+    export run_bond_distance_rdf
 
     """
         import_check()
@@ -261,6 +267,252 @@ module RingStatistics
 
         return string(topology)
 
+    end
+
+    @inline function _as_3xN(nodes)
+        X = Array{Float64}(nodes)
+        if size(X,1) == 3
+            return X
+        elseif size(X,2) == 3
+            return permutedims(X)  # N×3 -> 3×N
+        else
+            error("nodes must be 3×N or N×3; got size(nodes) = $(size(X))")
+        end
+    end
+
+    @inline function _shell_volumes(dr::Float64, nbins::Int)
+        vols = Vector{Float64}(undef, nbins)
+        @inbounds for k in 1:nbins
+            r1 = (k-1) * dr
+            r2 = k * dr
+            vols[k] = (4.0/3.0) * pi * (r2^3 - r1^3)
+        end
+        return vols
+    end
+
+    @inline function _pair_index(α::Int, β::Int, ntypes::Int)
+        if α > β
+            α, β = β, α
+        end
+        m = α - 1
+        base = m * (ntypes + 1) - (m * (m + 1)) ÷ 2
+        return base + (β - α + 1)
+    end
+
+    function _type_mapping(node_types, N::Int)
+        if node_types === nothing
+            types = ["X"]
+            type_id = ones(Int, N)
+            Ntype = [N]
+            return types, type_id, Ntype
+        end
+
+        @assert length(node_types) == N "node_types must have length N (n_nodes)."
+
+        types = String[]
+        type_id = Vector{Int}(undef, N)
+        map = Dict{String,Int}()
+
+        for i in 1:N
+            t = String(node_types[i])
+            id = get!(map, t) do
+                push!(types, t)
+                length(types)
+            end
+            type_id[i] = id
+        end
+
+        ntypes = length(types)
+        Ntype = zeros(Int, ntypes)
+        @inbounds for id in type_id
+            Ntype[id] += 1
+        end
+
+        return types, type_id, Ntype
+    end
+
+    function run_bond_distance_rdf(
+        nodes,
+        edges,
+        cell::Cell;
+        dmax::Int = 6,
+        rmax::Float64 = 10.0,
+        dr::Float64 = 0.02,
+        normalise::Bool = true,
+        node_types = nothing,
+        partial::Bool = false,
+    )
+        g = graph_from_edges(edges)
+
+        X = _as_3xN(nodes)
+        N = size(X, 2)
+        N < 2 && error("Need at least 2 nodes.")
+
+        # Cell matrix (triclinic-safe): columns are lattice vectors in Cartesian
+        A = SMatrix{3,3,Float64}(cell.mat)
+        V = abs(det(A))
+        V == 0.0 && error("Cell volume is zero/degenerate (det(cell.mat)=0).")
+        ρ = N / V
+
+        nbins = Int(floor(rmax / dr))
+        nbins < 1 && error("rmax/dr gives nbins < 1. Increase rmax or decrease dr.")
+        rcenters = ((0:nbins-1) .+ 0.5) .* dr
+        ΔV = _shell_volumes(dr, nbins)
+
+        # Types (optional)
+        types, type_id, Ntype = _type_mapping(node_types, N)
+        ntypes = length(types)
+        ρtype = [Ntype[t] / V for t in 1:ntypes]
+
+        nt = nthreads()
+
+        if !partial
+            # counts[D, k]
+            counts_tls = [zeros(Int, dmax, nbins) for _ in 1:nt]
+
+            @threads for i in 1:N
+                counts = counts_tls[threadid()]
+                ri = @SVector [X[1,i], X[2,i], X[3,i]]
+
+                Q = Graphs._neighborhood(g, i, dmax, weights(g), outneighbors)
+                popfirst!(Q)
+
+                @inbounds for (pv, D) in Q
+                    (D < 1 || D > dmax) && continue
+                    j = pv.v
+                    ofs = pv.ofs
+
+                    rj = @SVector [X[1,j], X[2,j], X[3,j]]
+                    rj_img = rj + A * SVector{3,Float64}(Tuple(ofs))
+
+                    dist = norm(rj_img - ri)
+                    if dist < rmax
+                        k = Int(floor(dist / dr)) + 1
+                        (1 <= k <= nbins) && (counts[D, k] += 1)
+                    end
+                end
+            end
+
+            counts = zeros(Int, dmax, nbins)
+            for t in 1:nt
+                counts .+= counts_tls[t]
+            end
+
+            gD = Array{Float64}(undef, dmax, nbins)
+            if normalise
+                @inbounds for k in 1:nbins
+                    denom = N * ρ * ΔV[k]
+                    invden = denom == 0 ? NaN : 1.0 / denom
+                    for D in 1:dmax
+                        gD[D, k] = counts[D, k] * invden
+                    end
+                end
+            else
+                @inbounds for D in 1:dmax, k in 1:nbins
+                    gD[D, k] = counts[D, k]
+                end
+            end
+
+            gtot = vec(sum(gD, dims=1))
+            return rcenters, gD, gtot
+
+        else
+            # Tidy pair list: (α<=β)
+            npairs = ntypes * (ntypes + 1) ÷ 2
+            pairs = Vector{Tuple{String,String}}(undef, npairs)
+            p = 0
+            @inbounds for α in 1:ntypes
+                for β in α:ntypes
+                    p += 1
+                    pairs[p] = (types[α], types[β])
+                end
+            end
+
+            # counts[pair, D, k] with unordered pair indexing
+            counts_tls = [zeros(Int, npairs, dmax, nbins) for _ in 1:nt]
+
+            @threads for i in 1:N
+                counts = counts_tls[threadid()]
+                ti = type_id[i]
+                ri = @SVector [X[1,i], X[2,i], X[3,i]]
+
+                Q = Graphs._neighborhood(g, i, dmax, weights(g), outneighbors)
+                popfirst!(Q)
+
+                @inbounds for (pv, D) in Q
+                    (D < 1 || D > dmax) && continue
+                    j = pv.v
+                    tj = type_id[j]
+                    pair = _pair_index(ti, tj, ntypes)
+
+                    ofs = pv.ofs
+                    rj = @SVector [X[1,j], X[2,j], X[3,j]]
+                    rj_img = rj + A * SVector{3,Float64}(Tuple(ofs))
+
+                    dist = norm(rj_img - ri)
+                    if dist < rmax
+                        k = Int(floor(dist / dr)) + 1
+                        if 1 <= k <= nbins
+                            counts[pair, D, k] += 1
+                        end
+                    end
+                end
+            end
+
+            counts = zeros(Int, npairs, dmax, nbins)
+            for t in 1:nt
+                counts .+= counts_tls[t]
+            end
+
+            gD_pairs = Array{Float64}(undef, npairs, dmax, nbins)
+
+            if normalise
+                # For α≠β we aggregated BOTH directions into one unordered pair,
+                # so divide by 2 to return the symmetrized (undirected) partial RDF.
+                p = 0
+                @inbounds for α in 1:ntypes
+                    Nα = Ntype[α]
+                    for β in α:ntypes
+                        p += 1
+                        ρβ = ρtype[β]
+                        factor = (α == β) ? 1.0 : 2.0
+                        for k in 1:nbins
+                            denom = factor * Nα * ρβ * ΔV[k]
+                            invden = denom == 0 ? NaN : 1.0 / denom
+                            for D in 1:dmax
+                                gD_pairs[p, D, k] = counts[p, D, k] * invden
+                            end
+                        end
+                    end
+                end
+            else
+                @inbounds for p in 1:npairs, D in 1:dmax, k in 1:nbins
+                    gD_pairs[p, D, k] = counts[p, D, k]
+                end
+            end
+
+            gtot_pairs = dropdims(sum(gD_pairs, dims=2), dims=2)  # (npairs, nbins)
+            return rcenters, pairs, gD_pairs, gtot_pairs
+        end
+    end
+
+    function run_bond_distance_rdf(
+        nodes,
+        edges,
+        cell_lengths,
+        cell_angles;
+        dmax::Int = 6,
+        rmax::Float64 = 10.0,
+        dr::Float64 = 0.02,
+        normalise::Bool = true,
+        node_types = nothing,
+        partial::Bool = false,
+    )
+        cell = Cell(1, collect(cell_lengths), collect(cell_angles))
+        return run_bond_distance_rdf(nodes, edges, cell;
+            dmax=dmax, rmax=rmax, dr=dr, normalise=normalise,
+            node_types=node_types, partial=partial
+        )
     end
 
     include("precompile.jl")

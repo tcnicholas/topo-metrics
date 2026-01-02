@@ -40,6 +40,7 @@ topo_metrics = ["RingStatistics/**/*"]
 Homepage = "https://github.com/tcnicholas/topo-metrics"
 
 [project.optional-dependencies]
+numba = ["numba>=0.63.1"]
 tests = ["pytest", "pytest-cov"]
 docs = [
     "sphinx",

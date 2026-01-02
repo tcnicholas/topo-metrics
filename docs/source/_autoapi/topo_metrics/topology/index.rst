@@ -93,13 +93,26 @@ Module Contents
 
 
 
-   .. py:method:: from_cgd(filename: str) -> Topology
+   .. py:method:: from_cgd(filename: pathlib.Path | str) -> Topology
       :classmethod:
 
 
       Parses and loads a CGD file with an adjacency matrix.
 
       :param filename: The path to the CGD file.
+
+      :rtype: A Topology object representing the network as nodes and edges.
+
+
+
+   .. py:method:: from_conflink(filename: str, node_type: str = 'Si', index: int | None = None) -> Topology
+      :classmethod:
+
+
+      Parses and loads a conflink file.
+
+      :param filename: The path to the conflink file.
+      :param node_type: The type to assign to all nodes in the topology.
 
       :rtype: A Topology object representing the network as nodes and edges.
 
@@ -152,6 +165,20 @@ Module Contents
       :param node_ids: The node IDs for which to compute coordination sequences. If None,
                        coordination sequences for all nodes are returned.
 
+
+
+   .. py:property:: cartesian_coordinates
+      :type: numpy.typing.NDArray[numpy.floating]
+
+
+      Return the Cartesian positions of all nodes in the network.
+
+
+   .. py:property:: fractional_coordinates
+      :type: numpy.typing.NDArray[numpy.floating]
+
+
+      Return the fractional positions of all nodes in the network.
 
 
 .. py:class:: Node

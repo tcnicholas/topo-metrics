@@ -5,9 +5,9 @@ import subprocess
 
 from topo_metrics.clusters import Cluster
 from topo_metrics.rings import Ring
-from topo_metrics.topology import Topology
+from topo_metrics.topology import Node, Topology
 
-__all__ = ["Topology", "Ring", "Cluster"]
+__all__ = ["Node", "Topology", "Ring", "Cluster"]
 __version__ = "0.1.4"
 
 
