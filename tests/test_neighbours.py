@@ -70,8 +70,12 @@ def test_autoreduce_neighborlist_degree2():
     )
 
     _, _, new_symbols, new_edges, _ = autoreduce_neighborlist(
-        cart_coords, frac_coords, symbols, edges,
-        remove_types={"O"}, remove_degree2=True
+        cart_coords,
+        frac_coords,
+        symbols,
+        edges,
+        remove_types={"O"},
+        remove_degree2=True,
     )
 
     # B should be removed
@@ -169,7 +173,6 @@ def test_autoreduce_neighborlist_triangle():
     _, _, new_symbols, new_edges, _ = autoreduce_neighborlist(
         cart_coords, frac_coords, symbols, edges, remove_types={"B"}
     )
-
 
     # A and C remain, with direct edge
     assert len(new_symbols) == 2
@@ -281,7 +284,7 @@ def test_autoreduce_neighborlist_degree2_chain():
             [0.8, 0.0, 0.0],  # E
         ]
     )
-    cart_coords = [None] * 
+    cart_coords = [None] * 5
     symbols = ["A", "B", "C", "D", "E"]
 
     edges = np.array(
