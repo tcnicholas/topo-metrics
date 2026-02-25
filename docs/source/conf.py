@@ -14,19 +14,21 @@ PKG_DIR = SRC_DIR / "topo_metrics"
 
 sys.path.insert(0, str(SRC_DIR))
 
-ANNOUNCEMENT = Path(__file__).parent.joinpath(
-    "_templates", "announcement.html"
-).read_text(encoding="utf-8")
+ANNOUNCEMENT = (
+    Path(__file__)
+    .parent.joinpath("_templates", "announcement.html")
+    .read_text(encoding="utf-8")
+)
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'topo-metrics'
-copyright = '2025, Thomas C. Nicholas'
-author = 'Thomas C. Nicholas'
+project = "topo-metrics"
+copyright = "2025, Thomas C. Nicholas"
+author = "Thomas C. Nicholas"
 
-version = '0.1.4'
-release = '0.1.4'
+version = "0.1.4"
+release = "0.1.4"
 
 # -- General configuration ---------------------------------------------------
 
@@ -51,7 +53,7 @@ extensions = [
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 intersphinx_mapping = {"sphinx": ("https://www.sphinx-doc.org/en/master", None)}
 
@@ -114,7 +116,7 @@ html_theme_options = {
     "use_edit_page_button": True,
     "show_toc_level": 1,
     "navbar_align": "left",
-    #"announcement": ANNOUNCEMENT,
+    # "announcement": ANNOUNCEMENT,
     "show_version_warning_banner": True,
     "navbar_center": ["navbar-nav"],
     "footer_start": ["copyright"],
@@ -130,7 +132,7 @@ html_theme_options = {
 html_context = {
     "github_user": "tcnicholas",
     "github_repo": "topo-metrics",
-    "github_version": "main", 
+    "github_version": "main",
     "doc_path": "docs",
 }
 html_static_path = ["_static"]
@@ -156,7 +158,7 @@ autoapi_options = [
     "undoc-members",
     "show-inheritance",
     "show-module-summary",
-    "show-module-annotations", 
+    "show-module-annotations",
 ]
 autosummary_generate = False
 autoapi_python_use_annotated = True

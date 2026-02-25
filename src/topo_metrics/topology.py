@@ -25,6 +25,7 @@ from topo_metrics.clusters import (
 )
 from topo_metrics.io.cgd import parse_cgd, process_neighbour_list
 from topo_metrics.io.conflink import parse_conflink
+from topo_metrics.io.lammps_data import load_lammps_data
 from topo_metrics.neighbours import (
     autoreduce_neighborlist,
     graph_edges_by_cutoff,
@@ -193,15 +194,25 @@ class Topology:
         neighbour_list = process_neighbour_list(edges, atoms, atom_labels)
 
         # Create Node instances
-        all_nodes = [
-            Node(
-                node_id=i + 1,
-                node_type=label,
-                frac_coord=frac_coord if atoms is not None else None,
-            )
-            for i, (label, frac_coord) in enumerate(zip(atom_labels, atoms))
-            if atoms is not None
-        ]
+        all_nodes = []
+        if atoms is not None:
+            all_nodes = [
+                Node(
+                    node_id=i + 1,
+                    node_type=label,
+                    frac_coord=frac_coord,
+                )
+                for i, (label, frac_coord) in enumerate(zip(atom_labels, atoms))
+            ]
+        else:
+            all_nodes = [
+                Node(
+                    node_id=i + 1,
+                    node_type=label,
+                    frac_coord=None,
+                )
+                for i, label in enumerate(atom_labels)
+            ]
 
         return cls(nodes=all_nodes, edges=neighbour_list, lattice=lattice)
 
@@ -252,6 +263,67 @@ class Topology:
             edges=components["edges"],
             lattice=components["lattice"],
         )
+
+    @classmethod
+    def from_lammps_data(
+        cls,
+        filename: Path | str,
+        *,
+        atom_style: str = "atomic",
+        units: str = "metal",
+        sort_by_id: bool = True,
+        prefer_bonds: bool = True,
+        cutoff: float = 0.0,
+        pair_cutoffs: dict[tuple[str, str], float] | None = None,
+        contract_neighborlist: bool = False,
+        remove_types: Iterable[Any] | None = None,
+        remove_degree2: bool = False,
+        omit_node_types: bool = False,
+    ) -> Topology:
+        """Create a Topology from a LAMMPS data file.
+
+        If the file contains a `Bonds` section, bonds are used as the edge list,
+        and periodic image shifts are inferred assuming MIC. Otherwise edges are
+        inferred by cutoff.
+        """
+
+        comps = load_lammps_data(
+            filename,
+            atom_style=atom_style,
+            units=units,
+            sort_by_id=sort_by_id,
+            prefer_bonds=prefer_bonds,
+            cutoff=cutoff,
+            pair_cutoffs=pair_cutoffs,
+            contract_neighborlist=contract_neighborlist,
+            remove_types=remove_types,
+            remove_degree2=remove_degree2,
+            omit_node_types=omit_node_types,
+        )
+
+        lattice = None
+        if all(comps.ase_atoms.pbc):
+            lattice = PymatgenLattice(comps.ase_atoms.cell)
+
+        nodes: list[Node] = []
+        for idx, (xc, sym) in enumerate(
+            zip(comps.cart_coords, comps.symbols), start=1
+        ):
+            xs = (
+                None
+                if isinstance(comps.frac_coords, list)
+                else comps.frac_coords[idx - 1]
+            )
+            nodes.append(
+                Node(
+                    node_id=idx,
+                    node_type=sym,
+                    cart_coord=xc,
+                    frac_coord=xs,
+                )
+            )
+
+        return cls(nodes=nodes, edges=comps.edges, lattice=lattice)
 
     def get_rings(self, depth: int = 12) -> list[RingGeometry]:
         """Computes or retrieves unique rings in the network.
