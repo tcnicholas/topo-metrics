@@ -24,11 +24,11 @@ ANNOUNCEMENT = (
 # -- Project information -----------------------------------------------------
 
 project = "topo-metrics"
-copyright = "2025, Thomas C. Nicholas"
+copyright = "2026, Thomas C. Nicholas"
 author = "Thomas C. Nicholas"
 
-version = "0.1.4"
-release = "0.1.4"
+version = "0.1.6"
+release = "0.1.6"
 
 # -- General configuration ---------------------------------------------------
 

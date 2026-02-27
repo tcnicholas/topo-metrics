@@ -74,6 +74,7 @@ push = false
 [tool.bumpver.file_patterns]
 "pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
 "src/topo_metrics/__init__.py" = ["{version}"]
+"docs/source/conf.py" = ['version = "{version}"', 'release = "{version}"']
 
 [tool.ruff]
 line-length = 80
