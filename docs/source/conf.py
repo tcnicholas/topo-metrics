@@ -27,8 +27,8 @@ project = "topo-metrics"
 copyright = "2026, Thomas C. Nicholas"
 author = "Thomas C. Nicholas"
 
-version = "0.1.6"
-release = "0.1.6"
+version = "0.1.7"
+release = "0.1.7"
 
 # -- General configuration ---------------------------------------------------
 
