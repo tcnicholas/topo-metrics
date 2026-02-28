@@ -41,7 +41,49 @@ RingsResults(
 )
 ```
 
-## Docs
+## Documentation
 
 Checkout the [documentation](https://tcnicholas.github.io/topo-metrics/) for 
 some more detailed examples of the available functionality.
+
+(This is in working progress...)
+
+## Citation
+
+If you find `topo-metrics` helpful for your research, please cite the preprint 
+in which we introduced the `CARVS` notation:
+
+```bibtex
+@misc{nicholas2025amof,
+  title         = {The structure and topology of an amorphous metal-organic framework},
+  author        = {Nicholas, Thomas C. and Thomas du Toit, Daniel F. and Rosset, Louise A. M. and Proserpio, Davide M. and Goodwin, Andrew L. and Deringer, Volker L.},
+  year          = {2025},
+  month         = mar,
+  eprint        = {2503.24367},
+  archivePrefix = {arXiv},
+  primaryClass  = {cond-mat.mtrl-sci},
+  doi           = {10.48550/arXiv.2503.24367},
+  url           = {https://arxiv.org/abs/2503.24367}
+}
+```
+
+`topo-metrics` relies on 
+[`PeriodicGraphs.jl`](https://github.com/Liozou/PeriodicGraphs.jl) and the 
+topology-identification routines provided by 
+[`CrystalNets.jl`](https://github.com/coudertlab/CrystalNets.jl). If you use 
+`topo-metrics` in published work, please also cite the `CrystalNets.jl` 
+companion article:
+
+```bibtex
+@article{zoubritzky2022crystalnets,
+  title   = {CrystalNets.jl: Identification of Crystal Topologies},
+  author  = {Zoubritzky, Lionel and Coudert, Fran{\c{c}}ois-Xavier},
+  journal = {SciPost Chem.},
+  volume  = {1},
+  number  = {2},
+  pages   = {005},
+  year    = {2022},
+  doi     = {10.21468/SciPostChem.1.2.005},
+  url     = {https://scipost.org/SciPostChem.1.2.005}
+}
+```
