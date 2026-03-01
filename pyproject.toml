@@ -24,6 +24,8 @@ dependencies = [
     "juliacall>=0.9.24",
     "vesin>=0.3.2",
     "ase>=3.24.0",
+    "cryptography>=46.0.5",
+    "jupyterlab>=4.4.8",
 ]
 requires-python = ">=3.10"
 

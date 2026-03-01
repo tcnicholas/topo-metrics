@@ -508,6 +508,7 @@ def writhe_method_1b(
     points: npt.ArrayLike, *, closed: bool = True, eps: float = 1e-12
 ) -> tuple[float, float]:
     """Method 1b: analytic Gauss integral (Eqs 13, 24-25)."""
+
     P = _as_points(points)
     A, B = _segments(P, closed)
     m = len(A)

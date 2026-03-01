@@ -20,10 +20,6 @@ export linking_number_1a
 export linking_number_pbc_1a
 export all_pairs_linking_pbc_1a
 
-# -----------------------------
-# Utilities
-# -----------------------------
-
 @inline function drop_duplicate_endpoint(P::AbstractMatrix{<:Real}; atol=1e-12)
     n = size(P, 1)
     if n >= 2
@@ -51,7 +47,6 @@ end
 end
 
 @inline function segments_closed(P::AbstractMatrix{<:Real})
-    # returns (A,B) as m×3 Float64 matrices, with segments A[i,:] -> B[i,:]
     Q = drop_duplicate_endpoint(P)
     n = size(Q,1)
     if n < 2
@@ -81,17 +76,18 @@ end
     return lens[(m+1)>>>1]
 end
 
-@inline function auto_disjoint_tol(A::AbstractMatrix{<:Real}, B::AbstractMatrix{<:Real};
-                                  rel::Float64=1e-3, abs_::Float64=1e-8)
+@inline function auto_disjoint_tol(
+    A::AbstractMatrix{<:Real}, 
+    B::AbstractMatrix{<:Real};
+    rel::Float64=1e-3,
+    abs_::Float64=1e-8
+)
     m1 = median_segment_length(A)
     m2 = median_segment_length(B)
     m = (m1>0 && m2>0) ? min(m1,m2) : max(m1,m2)
     return max(abs_, rel*max(1.0, m))
 end
 
-# -----------------------------
-# Scalar math kernels
-# -----------------------------
 
 @inline clamp01(x::Float64) = x < 0.0 ? 0.0 : (x > 1.0 ? 1.0 : x)
 @inline clampm11(x::Float64) = x < -1.0 ? -1.0 : (x > 1.0 ? 1.0 : x)
@@ -116,7 +112,6 @@ end
     return (ay*bz - az*by, az*bx - ax*bz, ax*by - ay*bx)
 end
 
-# Gauss pair contribution: method 1a, signed V* (NOT divided by 4π)
 @inline function gauss_pair_1a(
     p1x,p1y,p1z, p2x,p2y,p2z,
     p3x,p3y,p3z, p4x,p4y,p4z,
@@ -153,7 +148,6 @@ end
     end
 end
 
-# Segment-segment distance squared (Ericson-style), robust clamping
 @inline function segseg_dist2(
     p1x,p1y,p1z, p2x,p2y,p2z,
     q1x,q1y,q1z, q2x,q2y,q2z
@@ -221,7 +215,6 @@ end
     return dx*dx + dy*dy + dz*dz
 end
 
-# Min point-point distance squared between A and shifted B (cheap ranking)
 function min_point_dist2_shift(A::Matrix{Float64}, B::Matrix{Float64}, sx,sy,sz)
     best = Inf
     na = size(A,1); nb = size(B,1)
@@ -239,7 +232,6 @@ function min_point_dist2_shift(A::Matrix{Float64}, B::Matrix{Float64}, sx,sy,sz)
     return best
 end
 
-# Min segment-segment distance squared between segments (A1->B1) and shifted (A2->B2)
 function min_seg_dist2_shift(A1::Matrix{Float64}, B1::Matrix{Float64},
                             A2::Matrix{Float64}, B2::Matrix{Float64},
                             sx,sy,sz;
@@ -264,7 +256,6 @@ function min_seg_dist2_shift(A1::Matrix{Float64}, B1::Matrix{Float64},
     return best
 end
 
-# Sum of method-1a Vstar contributions between two rings, with ring2 shifted by -shift
 function link_sum_1a_shift(A1::Matrix{Float64}, B1::Matrix{Float64},
                            A2::Matrix{Float64}, B2::Matrix{Float64},
                            sx,sy,sz, eps::Float64)
@@ -281,10 +272,6 @@ function link_sum_1a_shift(A1::Matrix{Float64}, B1::Matrix{Float64},
     end
     return sumV
 end
-
-# -----------------------------
-# Non-PBC linking number (1a)
-# -----------------------------
 
 function linking_number_1a(ringA::AbstractMatrix{<:Real}, ringB::AbstractMatrix{<:Real};
                            eps::Float64=1e-12,
@@ -308,10 +295,6 @@ function linking_number_1a(ringA::AbstractMatrix{<:Real}, ringB::AbstractMatrix{
     return sumV / (4.0*pi)
 end
 
-# -----------------------------
-# PBC helpers
-# -----------------------------
-
 function pbc_base_integer_shift(cA::Vector{Float64}, cB::Vector{Float64},
                                 cell::Matrix{Float64},
                                 pbc::NTuple{3,Bool})
@@ -325,10 +308,6 @@ function pbc_base_integer_shift(cA::Vector{Float64}, cB::Vector{Float64},
     end
     return n0
 end
-
-# -----------------------------
-# Linking number with PBC scan (1a)
-# -----------------------------
 
 """
     linking_number_pbc_1a(ringA, ringB, cell; ...)
@@ -361,11 +340,9 @@ function linking_number_pbc_1a(ringA::AbstractMatrix{<:Real}, ringB::AbstractMat
     dt = isnothing(disjoint_tol) ? auto_disjoint_tol(A,B; rel=disjoint_rel) : disjoint_tol
     dt2 = dt*dt
 
-    # centroid min-image base shift
     n0 = pbc_base_integer_shift(centroid(A), centroid(B), cell, pbc)
 
     rng = -n_images:n_images
-    # candidates store: (rank_d2, nx,ny,nz, sx,sy,sz)
     cand = Vector{NTuple{7,Float64}}()
     sizehint!(cand, (2n_images+1)^3)
 
@@ -394,14 +371,13 @@ function linking_number_pbc_1a(ringA::AbstractMatrix{<:Real}, ringB::AbstractMat
 
     best_lk = NaN
     best_n  = (0,0,0)
-    best_key = (-Inf, Inf, Inf)  # (abs(lk_int) maximize, dist2 minimize, resid minimize)
+    best_key = (-Inf, Inf, Inf)
 
     for c in cand
         dist2 = c[1]
         nx = Int(round(c[2])); ny = Int(round(c[3])); nz = Int(round(c[4]))
         sx,sy,sz = c[5], c[6], c[7]
 
-        # disjointness filter (segment-segment). Early exit at dt2.
         d2seg = min_seg_dist2_shift(A1,B1,A2,B2, sx,sy,sz; early_exit2=dt2)
         if d2seg < dt2
             continue
@@ -413,13 +389,10 @@ function linking_number_pbc_1a(ringA::AbstractMatrix{<:Real}, ringB::AbstractMat
         lk_int = round(Int, lk)
         resid  = abs(lk - lk_int)
 
-        # If it’s not close to integer, keep it but de-prioritize strongly
-        # (still lets you debug if something goes weird).
         int_weight = resid <= integer_tol ? abs(lk_int) : 0
 
         key = (float(int_weight), dist2, resid)
 
-        # lexicographic: maximize int_weight, minimize dist2, minimize resid
         if (key[1] > best_key[1]) ||
            (key[1] == best_key[1] && key[2] < best_key[2]) ||
            (key[1] == best_key[1] && key[2] == best_key[2] && key[3] < best_key[3])
@@ -432,11 +405,6 @@ function linking_number_pbc_1a(ringA::AbstractMatrix{<:Real}, ringB::AbstractMat
     return best_lk, best_n
 end
 
-# -----------------------------
-# All-pairs driver (unique pairs) + threading
-# -----------------------------
-
-# Unrank 1-based pair index k into (i,j) with 1 ≤ i < j ≤ n
 function unrank_pair(k::Int, n::Int)
     # Solve i from cumulative C(i)=i*(2n-i-1)/2 >= k
     # i = ceil(((2n-1) - sqrt((2n-1)^2 - 8k))/2)
@@ -457,8 +425,6 @@ Returns:
   - lks::Vector{Float64} (length nC2)
   - shifts::Vector{NTuple{3,Int}}
   - I::Vector{Int}, J::Vector{Int}  (pair indices, same length)
-
-You can filter linked pairs afterward: abs(round(lk)) >= 1 (with your own tol).
 """
 function all_pairs_linking_pbc_1a(rings::Vector{<:AbstractMatrix{<:Real}}, cell;
                                  pbc::NTuple{3,Bool}=(true,true,true),
